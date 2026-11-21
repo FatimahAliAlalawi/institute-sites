@@ -79,6 +79,22 @@ class TaskBoard
                 ]);
             }
 
+            // متابعة الغياب: لمسؤول «جدول التحضير» — متدربون على حد الغياب أو تجاوزوه
+            if ($trainees->isNotEmpty() && static::matches($admin, $p->opsAssignees('prep_sheet'))) {
+                $flags = $trainees->map(fn (Registration $t) => ProgramAttendance::summaryFor($t, $p)['cert'])->countBy();
+                $over = $flags->get('over', 0);
+                $near = $flags->get('near', 0);
+                if ($over + $near > 0) {
+                    $tasks->push([
+                        'program' => $p, 'key' => 'absence', 'title' => 'متابعة الغياب والشهادة',
+                        'detail' => trim(($over ? $over.' تجاوز الحد (لا يستحق الشهادة)' : '').($over && $near ? '، ' : '').($near ? $near.' على حد الغياب' : '')).' — بلّغهم برسالة تقرير الحضور',
+                        'kind' => 'course', 'due' => $today->copy(), 'total' => $over + $near, 'pending' => $over + $near, 'done' => false,
+                        'overdue' => false, 'today' => true,
+                        'link' => route('admin.course-attendance.show', $p),
+                    ]);
+                }
+            }
+
             // المدرب: تحضير أيام دورته
             if ($p->trainer_admin_id === $admin->id) {
                 $recorded = ProgramAttendance::where('program_id', $p->id)->pluck('date')->map(fn ($d) => substr((string) $d, 0, 10))->unique()->all();

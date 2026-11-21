@@ -67,7 +67,7 @@ class CourseAttendanceController extends Controller
             ->map(fn ($d) => Carbon::parse($d)->toDateString())->unique()->values()->all();
         $dates = collect(array_unique(array_merge($sessions, $recordedDates)))->sort()->values();
 
-        $summary = $trainees->mapWithKeys(fn ($t) => [$t->id => ProgramAttendance::summaryFor($t)]);
+        $summary = $trainees->mapWithKeys(fn ($t) => [$t->id => ProgramAttendance::summaryFor($t, $program)]);
 
         return view('admin.course-attendance.show', compact('program', 'date', 'trainees', 'records', 'dates', 'summary', 'sessions', 'recordedDates'));
     }
