@@ -50,7 +50,7 @@ class TraineeMessages
 
     public static function vars(Registration $r, Program $p): array
     {
-        $att = ProgramAttendance::summaryFor($r);
+        $att = ProgramAttendance::summaryFor($r, $p);
 
         return [
             '{الاسم}' => trim(explode(' ', trim($r->name))[0] ?: $r->name),
@@ -70,7 +70,13 @@ class TraineeMessages
             '{رابط_التقويم}' => ($p->session_dates || $p->start_date) ? route('programs.ics', $p) : '—',
             '{أيام_الحضور}' => (string) $att['attended'],
             '{أيام_الدورة}' => (string) $att['days'],
-            '{ملاحظة_الحضور}' => $att['absent'] ? 'عدد أيام الغياب: '.$att['absent'].'. الحضور شرط للحصول على الشهادة.' : 'ممتاز، استمر 👏',
+            '{أيام_الغياب}' => (string) $att['missed'],
+            '{الغياب_المسموح}' => (string) $att['allowed'],
+            '{ملاحظة_الحضور}' => match ($att['cert']) {
+                'over' => 'عدد أيام الغياب: '.$att['missed'].' من '.$att['total'].'، وهذا تجاوز الحد المسموح ('.$att['max_pct'].'% من أيام الدورة)، لذلك لا تستحق الشهادة حسب سياسة المعهد. للاستفسار تواصل معنا.',
+                'near' => 'عدد أيام الغياب: '.$att['missed'].'. تنبيه: الشهادة تتطلب ألا يتجاوز الغياب '.$att['max_pct'].'% من أيام الدورة'.($att['remaining'] ? '، وباقي لك يوم غياب واحد فقط.' : '، وغيابك وصل الحد، فأي غياب إضافي يُسقط الشهادة.'),
+                default => $att['missed'] ? 'عدد أيام الغياب: '.$att['missed'].'. الشهادة تتطلب ألا يتجاوز الغياب '.$att['max_pct'].'% من أيام الدورة.' : 'ممتاز، استمر 👏',
+            },
         ];
     }
 

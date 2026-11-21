@@ -30,6 +30,23 @@
         @endif
     </form>
 
+    @php($atRisk = $trainees->filter(fn ($t) => $summary[$t->id]['cert'] !== 'ok'))
+    @if ($atRisk->isNotEmpty())
+        @php($maxPct = $summary[$atRisk->first()->id]['max_pct'])
+        <div class="card" style="border-color:#f0b4ae;background:#fff6f5">
+            <h2 style="color:#b42318"><i class="fa-solid fa-triangle-exclamation"></i> تنبيه الغياب (الحد المسموح {{ $maxPct }}% من أيام الدورة)</h2>
+            <ul style="margin:6px 0 0;padding-inline-start:1.2em">
+                @foreach ($atRisk as $t)
+                    @php($s = $summary[$t->id])
+                    <li><b>{{ $t->name }}</b>: غاب {{ $s['missed'] }} من {{ $s['total'] }} يومًا ({{ $s['absence_pct'] }}%) —
+                        @if ($s['cert'] === 'over')<span style="color:#b42318;font-weight:700">تجاوز الحد، لا يستحق الشهادة</span>@elseif ($s['remaining'] === 0)<span style="color:#b54708;font-weight:700">وصل للحد: أي غياب آخر يُسقط الشهادة</span>@else<span style="color:#b54708;font-weight:700">باقي له يوم غياب واحد فقط</span>@endif
+                    </li>
+                @endforeach
+            </ul>
+            <p class="sub" style="margin:6px 0 0">بلّغ المتدرب برسالة «تقرير الحضور» من «تشغيل الدورة»{{ \App\Models\ProgramAttendance::excusedCounts() ? '. الغياب بعذر محسوب ضمن النسبة' : '. الغياب بعذر غير محسوب ضمن النسبة' }} (يُغيَّر من الإعدادات ← الحضور والشهادة).</p>
+        </div>
+    @endif
+
     <form class="card" method="post" action="{{ route('admin.course-attendance.store', $program) }}">
         @csrf
         <input type="hidden" name="date" value="{{ $date }}">
@@ -52,7 +69,8 @@
                                 <td style="text-align:center"><input type="radio" name="status[{{ $t->id }}]" value="{{ $st }}" @checked($cur === $st) style="width:20px;height:20px"></td>
                             @endforeach
                             <td><input type="text" name="note[{{ $t->id }}]" value="{{ $records[$t->id]->note ?? '' }}" placeholder="اختياري" style="min-width:120px"></td>
-                            <td class="sub" style="white-space:nowrap">حضر {{ $s['attended'] }} من {{ $s['days'] }}@if ($s['absent'])<div style="color:#b42318">غاب {{ $s['absent'] }}</div>@endif</td>
+                            <td class="sub" style="white-space:nowrap">حضر {{ $s['attended'] }} من {{ $s['days'] }}@if ($s['missed'])<div style="color:#b42318">غياب {{ $s['missed'] }} من {{ $s['total'] }} ({{ $s['absence_pct'] }}%)</div>@endif
+                                @if ($s['cert'] !== 'ok')@php([$cl, $cc] = \App\Models\ProgramAttendance::CERT_LABELS[$s['cert']])<span class="badge {{ $cc }}">{{ $cl }}</span>@endif</td>
                         </tr>
                     @endforeach
                 </table>
