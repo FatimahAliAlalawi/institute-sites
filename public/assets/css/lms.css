@@ -1,0 +1,169 @@
+/* ===== المنصة التعليمية (LMS) ===== */
+
+/* بطاقة الدورة */
+.course-card .thumb { aspect-ratio: 16/10; }
+.course-card .price { font-weight: 800; color: var(--primary); font-size: 17px; }
+.course-card .price del { color: var(--muted); font-weight: 500; font-size: 13px; margin-inline-start: 6px; }
+.course-card .price.free { color: #16794a; }
+.course-card .foot { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--line); padding-top: 12px; margin-top: 4px; }
+.course-card .by { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--muted); margin-bottom: 8px; }
+.stars { color: #f5a524; font-size: 13px; letter-spacing: 1px; white-space: nowrap; }
+.stars .off { color: #d9d6e5; }
+.avatar { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; background: var(--gradient); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex: 0 0 auto; }
+.avatar.lg { width: 84px; height: 84px; font-size: 30px; }
+
+/* شريط التصفية */
+.course-filters { display: grid; grid-template-columns: 1fr auto auto auto; gap: 10px; margin-bottom: 26px; }
+.course-filters select { min-width: 160px; }
+
+/* رأس صفحة الدورة */
+.course-hero { background: #1d1846; color: #fff; padding: 50px 0; }
+.course-hero .container { display: grid; grid-template-columns: 1fr 380px; gap: 40px; }
+.course-hero h1 { color: #fff; font-size: clamp(26px, 3.6vw, 38px); }
+.course-hero p.lead { color: #cfcaf0; font-size: 17px; }
+.course-hero .facts { display: flex; flex-wrap: wrap; gap: 18px; color: #cfcaf0; font-size: 14.5px; margin-top: 14px; }
+.course-hero .facts b { color: #fff; }
+.course-hero .crumbs a { color: #fff; }
+
+.course-layout { display: grid; grid-template-columns: 1fr 380px; gap: 40px; align-items: start; }
+.enroll-box { background: #fff; border: 1px solid var(--line); border-radius: 22px; overflow: hidden; box-shadow: var(--shadow); position: sticky; top: 100px; margin-top: -230px; }
+.enroll-box .media { aspect-ratio: 16/9; background: var(--gradient); display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 22px; padding: 12px; text-align: center; }
+.enroll-box .media img, .enroll-box .media iframe, .enroll-box .media video { width: 100%; height: 100%; object-fit: cover; border: 0; }
+.enroll-box .inner { padding: 24px; }
+.enroll-box .big-price { font-size: 32px; font-weight: 800; color: var(--primary); }
+.enroll-box .big-price del { font-size: 17px; color: var(--muted); font-weight: 500; margin-inline-start: 8px; }
+.enroll-box ul { list-style: none; padding: 0; margin: 18px 0 0; display: grid; gap: 10px; font-size: 14.5px; }
+.enroll-box ul i { width: 22px; color: var(--accent); }
+.progress { height: 10px; background: var(--soft); border-radius: 99px; overflow: hidden; }
+.progress > span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--primary)); border-radius: 99px; transition: width .4s; }
+.progress-label { display: flex; justify-content: space-between; font-size: 13.5px; color: var(--muted); margin: 6px 0 14px; }
+
+.learn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 24px; list-style: none; padding: 0; margin: 0; }
+.learn-grid li { padding-inline-start: 28px; position: relative; }
+.learn-grid li::before { content: "\f00c"; font-family: "Font Awesome 6 Free"; font-weight: 900; color: #16794a; position: absolute; right: 0; top: 2px; }
+
+/* المنهج */
+.curriculum { border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+.curriculum details { border-bottom: 1px solid var(--line); }
+.curriculum details:last-child { border-bottom: 0; }
+.curriculum summary { list-style: none; cursor: pointer; padding: 16px 20px; background: var(--soft2); display: flex; justify-content: space-between; gap: 12px; font-weight: 700; }
+.curriculum summary::-webkit-details-marker { display: none; }
+.curriculum summary small { color: var(--muted); font-weight: 500; }
+.curriculum .item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; border-top: 1px solid var(--line); font-size: 15px; color: var(--ink); }
+.curriculum .item i.type { width: 20px; color: var(--accent); }
+.curriculum .item .end { margin-inline-start: auto; display: flex; gap: 10px; align-items: center; color: var(--muted); font-size: 13px; }
+.curriculum .item .tag { background: #e6f6ee; color: #16794a; padding: 1px 10px; border-radius: 99px; font-size: 12px; font-weight: 700; }
+.curriculum a.item:hover { background: var(--soft2); }
+
+.instructor-box { display: flex; gap: 18px; align-items: flex-start; }
+.instructor-box img.avatar { width: 84px; height: 84px; }
+
+.review { border-bottom: 1px solid var(--line); padding: 16px 0; display: flex; gap: 14px; }
+.review:last-child { border-bottom: 0; }
+.review b { display: block; }
+.rating-input { display: flex; flex-direction: row-reverse; justify-content: flex-end; gap: 4px; }
+.rating-input input { display: none; }
+.rating-input label { font-size: 28px; color: #d9d6e5; cursor: pointer; margin: 0; }
+.rating-input input:checked ~ label, .rating-input label:hover, .rating-input label:hover ~ label { color: #f5a524; }
+
+/* المشغّل */
+.day-box { margin-top: 12px; padding: 10px 12px; border-radius: 12px; font-size: 13.5px; font-weight: 600; line-height: 1.6; }
+.day-box.open { background: #e6f6ee; color: #16794a; }
+.day-box.wait { background: #fff4e5; color: #b54708; }
+.day-box small { display: block; font-weight: 500; opacity: .85; margin-top: 2px; }
+.att { display: inline-flex; width: 26px; height: 26px; border-radius: 8px; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+.att.present { background: #e6f6ee; color: #16794a; }
+.att.absent { background: #fdecec; color: #c62828; }
+.att.off, .att.none { background: #f1f0f5; color: #b5b2c4; }
+.att.today { background: #fff4e5; color: #b54708; }
+.player { display: grid; grid-template-columns: 340px 1fr; min-height: calc(100vh - 78px); background: var(--soft2); }
+.player-side { background: #fff; border-left: 1px solid var(--line); overflow-y: auto; max-height: calc(100vh - 78px); position: sticky; top: 78px; }
+.player-side .head { padding: 18px 20px; border-bottom: 1px solid var(--line); }
+.player-side .head h3 { font-size: 16px; color: var(--primary); margin-bottom: 10px; }
+.player-side .topic-title { padding: 12px 20px; background: var(--soft2); font-weight: 700; font-size: 14px; border-bottom: 1px solid var(--line); }
+.player-side a.item { display: flex; gap: 10px; align-items: center; padding: 11px 20px; font-size: 14px; color: var(--ink); border-bottom: 1px solid var(--line); }
+.player-side a.item:hover { background: var(--soft2); }
+.player-side a.item.current { background: #ece9fb; color: var(--primary); font-weight: 700; box-shadow: inset -4px 0 0 var(--primary); }
+.player-side a.item .st { margin-inline-start: auto; }
+.player-side a.item .st .fa-circle-check { color: #16794a; }
+.player-side a.item .st .fa-circle { color: #d0cde0; }
+.player-side a.item.locked { opacity: .55; }
+.player-main { padding: 30px; min-width: 0; }
+.player-main .inner { max-width: 960px; margin: 0 auto; }
+.video { position: relative; aspect-ratio: 16/9; background: #000; border-radius: 18px; overflow: hidden; margin-bottom: 24px; }
+.video iframe, .video video { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.lesson-content { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 28px; font-size: 16.5px; }
+.lesson-nav { display: flex; justify-content: space-between; gap: 12px; margin-top: 24px; flex-wrap: wrap; align-items: center; }
+.player-toggle { display: none; }
+
+/* الاختبار */
+.question { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 22px; margin-bottom: 16px; }
+.question h4 { font-size: 17px; margin-bottom: 14px; }
+.question .num { color: var(--accent); font-weight: 800; margin-inline-end: 6px; }
+.option { display: flex; gap: 12px; align-items: center; padding: 12px 16px; border: 1.5px solid var(--line); border-radius: 12px; margin-bottom: 8px; cursor: pointer; font-weight: 500; }
+.option:hover { border-color: var(--accent); }
+.option input { width: 18px; height: 18px; accent-color: var(--primary); }
+.option.right { border-color: #16794a; background: #e6f6ee; }
+.option.wrong { border-color: #c62828; background: #fdecec; }
+.quiz-info { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0; }
+.quiz-info div { background: var(--soft); border-radius: 14px; padding: 14px; text-align: center; }
+.quiz-info b { display: block; color: var(--primary); font-size: 20px; }
+.quiz-info small { color: var(--muted); }
+.timer { position: sticky; top: 90px; z-index: 5; background: var(--primary); color: #fff; border-radius: 99px; padding: 8px 18px; display: inline-flex; gap: 8px; font-weight: 700; margin-bottom: 16px; }
+.result-box { text-align: center; background: #fff; border: 1px solid var(--line); border-radius: 22px; padding: 34px; margin-bottom: 24px; }
+.result-box .score { font-size: 64px; font-weight: 800; line-height: 1.1; }
+.result-box.pass .score { color: #16794a; }
+.result-box.fail .score { color: #c62828; }
+
+/* لوحة الطالب */
+.dash { display: grid; grid-template-columns: 260px 1fr; gap: 30px; align-items: start; }
+.dash-nav { background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 14px; position: sticky; top: 100px; }
+.dash-nav .me { display: flex; gap: 12px; align-items: center; padding: 8px 8px 16px; border-bottom: 1px solid var(--line); margin-bottom: 8px; }
+.dash-nav a, .dash-nav button { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 10px; color: var(--ink); font-weight: 600; width: 100%; background: none; border: 0; font: inherit; cursor: pointer; text-align: right; }
+.dash-nav a:hover, .dash-nav button:hover { background: var(--soft); }
+.dash-nav a.active { background: var(--primary); color: #fff; }
+.dash-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 24px; }
+.dash-stats div { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
+.dash-stats b { display: block; font-size: 28px; color: var(--primary); }
+.dash-stats span { color: var(--muted); font-size: 14px; }
+.my-course { display: grid; grid-template-columns: 180px 1fr auto; gap: 18px; align-items: center; background: #fff; border: 1px solid var(--line); border-radius: 18px; padding: 14px; margin-bottom: 14px; }
+.my-course .thumb { aspect-ratio: 16/10; border-radius: 12px; overflow: hidden; background: var(--gradient); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; text-align: center; padding: 6px; }
+.my-course .thumb img { width: 100%; height: 100%; object-fit: cover; }
+.my-course h3 { font-size: 17px; margin-bottom: 6px; }
+.pill { display: inline-block; padding: 2px 12px; border-radius: 99px; font-size: 12.5px; font-weight: 700; }
+.pill.active { background: #e6f6ee; color: #16794a; }
+.pill.pending { background: #fff4e5; color: #b54708; }
+.pill.cancelled { background: #fdecec; color: #c62828; }
+.pill.done { background: #ece9fb; color: var(--primary); }
+.table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 16px; overflow: hidden; border: 1px solid var(--line); }
+.table th, .table td { padding: 12px 14px; text-align: right; border-bottom: 1px solid var(--line); font-size: 14.5px; }
+.table th { background: var(--soft2); color: var(--muted); font-weight: 600; }
+
+/* الدخول والتسجيل */
+.auth-wrap { max-width: 480px; margin: 0 auto; }
+.auth-wrap .switch { text-align: center; margin-top: 18px; color: var(--muted); }
+.check-row { display: flex; gap: 8px; align-items: center; font-weight: 500; }
+
+.bank-box { background: var(--soft2); border: 1px dashed var(--accent); border-radius: 16px; padding: 20px; margin-bottom: 20px; }
+.bank-box dl { display: grid; grid-template-columns: 150px 1fr; gap: 8px; margin: 0; }
+.bank-box dt { color: var(--muted); }
+.bank-box dd { margin: 0; font-weight: 700; unicode-bidi: plaintext; }
+
+@media (max-width: 1000px) {
+    .course-hero .container, .course-layout, .dash { grid-template-columns: 1fr; }
+    .enroll-box { margin-top: 0; position: static; }
+    .player { grid-template-columns: 1fr; }
+    .player-side { position: fixed; inset: 78px 0 0 auto; width: 320px; z-index: 40; transform: translateX(100%); transition: .25s; max-height: none; }
+    .player-side.open { transform: none; box-shadow: -10px 0 40px rgba(0, 0, 0, .2); }
+    .player-toggle { display: inline-flex; margin-bottom: 14px; }
+    .dash-nav { position: static; }
+    .course-filters { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+    .learn-grid, .dash-stats, .quiz-info { grid-template-columns: 1fr 1fr; }
+    .my-course { grid-template-columns: 1fr; }
+    .player-main { padding: 16px; }
+    .lesson-content { padding: 18px; }
+    .course-filters { grid-template-columns: 1fr; }
+    .bank-box dl { grid-template-columns: 1fr; }
+}
