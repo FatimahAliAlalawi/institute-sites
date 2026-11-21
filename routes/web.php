@@ -88,6 +88,8 @@ Route::middleware('installed')->group(function () {
             Route::post('logout', [Admin\AuthController::class, 'logout'])->name('logout');
             Route::get('/', Admin\DashboardController::class)->name('dashboard');
 
+            Route::get('programs/{program}/ops', [Admin\OpsController::class, 'show'])->name('programs.ops');
+            Route::post('programs/{program}/ops', [Admin\OpsController::class, 'update'])->name('programs.ops.update');
             Route::get('programs/{program}/ad-card', [Admin\ProgramController::class, 'adCard'])->name('programs.ad-card');
             Route::get('programs/{program}/qr/{type}', [Admin\ProgramController::class, 'qr'])->whereIn('type', ['page', 'wa'])->name('programs.qr');
             Route::resource('programs', Admin\ProgramController::class)->except('show');

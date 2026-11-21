@@ -10,6 +10,13 @@
     <div class="body">
         <h3>{{ $program->title }}</h3>
         <p>{{ $program->summary }}</p>
+        @if ($program->schedule_days || $program->schedule_time || $program->trainer_name)
+            <div class="sched">
+                @if ($program->schedule_days)<span><i class="fa-regular fa-calendar"></i> {{ $program->schedule_days }}</span>@endif
+                @if ($program->schedule_time)<span><i class="fa-regular fa-clock"></i> {{ $program->schedule_time }}</span>@endif
+                @if ($program->trainer_name)<span><i class="fa-solid fa-chalkboard-user"></i> {{ $program->trainer_name }}</span>@endif
+            </div>
+        @endif
         <div class="meta">
             @if ($program->duration)<span class="chip"><i class="fa-regular fa-clock"></i> {{ $program->duration }}</span>@endif
             @if ($program->has_offer)

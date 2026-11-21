@@ -10,6 +10,13 @@
     </div>
     <div class="plan-info">
         <h3><a href="{{ route('programs.show', $program) }}">{{ $program->title }}</a></h3>
+        @if ($program->schedule_days || $program->schedule_time || $program->trainer_name)
+            <div class="sched">
+                @if ($program->schedule_days)<span><i class="fa-regular fa-calendar"></i> {{ $program->schedule_days }}</span>@endif
+                @if ($program->schedule_time)<span><i class="fa-regular fa-clock"></i> {{ $program->schedule_time }}</span>@endif
+                @if ($program->trainer_name)<span><i class="fa-solid fa-chalkboard-user"></i> {{ $program->trainer_name }}</span>@endif
+            </div>
+        @endif
         <div class="meta">
             @if ($program->accreditation_no)<span class="chip"><i class="fa-solid fa-certificate"></i> رقم الاعتماد <span dir="ltr">{{ $program->accreditation_no }}</span></span>@endif
             @if ($program->duration)<span class="chip"><i class="fa-regular fa-clock"></i> {{ $program->duration }}</span>@endif

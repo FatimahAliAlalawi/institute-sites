@@ -39,10 +39,20 @@ class Registration extends Model
     protected $fillable = [
         'program_id', 'name', 'phone', 'email', 'city', 'gender', 'qualification',
         'employment_status', 'notes', 'status', 'admin_notes', 'ip', 'extra',
-        'source', 'follow_up_at', 'invoice_no', 'attendance', 'coupon_code',
+        'source', 'follow_up_at', 'invoice_no', 'attendance', 'coupon_code', 'steps',
     ];
 
-    protected $casts = ['extra' => 'array', 'follow_up_at' => 'date'];
+    protected $casts = ['extra' => 'array', 'follow_up_at' => 'date', 'steps' => 'array'];
+
+    /** هل نُفّذت خطوة من خطوات آلية التسجيل لهذا المتدرب؟ */
+    public function stepDone(string $step): bool
+    {
+        if ($step === 'invoice' && filled($this->invoice_no)) {
+            return true;
+        }
+
+        return ! empty($this->steps[$step]);
+    }
 
     public function program()
     {

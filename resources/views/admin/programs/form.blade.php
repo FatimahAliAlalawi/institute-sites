@@ -4,6 +4,7 @@
 
 @section('actions')
     @if ($program->exists)
+        <a href="{{ route('admin.programs.ops', $program) }}" class="btn"><i class="fa-solid fa-list-check"></i> تشغيل الدورة</a>
         <a href="{{ route('admin.programs.ad-card', $program) }}" target="_blank" class="btn"><i class="fa-solid fa-bullhorn"></i> بطاقة الإعلان و QR</a>
         <a href="{{ route('programs.show', $program) }}" target="_blank" class="btn"><i class="fa-regular fa-eye"></i> عرض في الموقع</a>
     @endif
@@ -55,6 +56,18 @@
                 <div class="field">
                     <label for="duration">مدة التنفيذ</label>
                     <input type="text" id="duration" name="duration" value="{{ old('duration', $program->duration) }}" placeholder="مثال: 10 أيام (أربع ساعات يوميًا)">
+                </div>
+                <div class="field">
+                    <label for="schedule_days">أيام الدورة</label>
+                    <input type="text" id="schedule_days" name="schedule_days" value="{{ old('schedule_days', $program->schedule_days) }}" placeholder="مثال: الأحد - الثلاثاء - الخميس">
+                </div>
+                <div class="field">
+                    <label for="schedule_time">وقت الدورة</label>
+                    <input type="text" id="schedule_time" name="schedule_time" value="{{ old('schedule_time', $program->schedule_time) }}" placeholder="مثال: 5:00 م — 8:00 م">
+                </div>
+                <div class="field">
+                    <label for="trainer_name">المدرب</label>
+                    <input type="text" id="trainer_name" name="trainer_name" value="{{ old('trainer_name', $program->trainer_name) }}" placeholder="مثال: أ. أحمد">
                 </div>
                 <div class="field">
                     <label for="hours">عدد الساعات</label>

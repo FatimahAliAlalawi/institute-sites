@@ -75,6 +75,8 @@
             <tr><th>الاسم المعتمد للدورة</th><td><b>{{ $program->title }}</b></td></tr>
             <tr><th>رقم الاعتماد</th><td>@if ($program->accreditation_no)<span dir="ltr">{{ $program->accreditation_no }}</span>@else<span class="missing">ناقص — أضِفه قبل التصميم</span>@endif</td></tr>
             <tr><th>المدة المعتمدة</th><td>@if ($program->duration || $program->hours){{ $program->duration }}{{ $program->duration && $program->hours ? ' — ' : '' }}{{ $program->hours }}@else<span class="missing">ناقصة</span>@endif</td></tr>
+            @if ($program->schedule_days || $program->schedule_time)<tr><th>الأيام والوقت</th><td>{{ $program->schedule_days }}{{ $program->schedule_days && $program->schedule_time ? ' | ' : '' }}{{ $program->schedule_time }}</td></tr>@endif
+            @if ($program->trainer_name)<tr><th>المدرب</th><td>{{ $program->trainer_name }}</td></tr>@endif
             <tr><th>تاريخ البدء</th><td>{{ $program->start_date?->translatedFormat('l j F Y') ?? '—' }}</td></tr>
             <tr><th>نوع التدريب والمكان</th><td>{{ $program->mode }}{{ $program->location ? ' — '.$program->location : '' }}</td></tr>
             <tr><th>الرسوم</th><td>

@@ -27,11 +27,31 @@ class Program extends Model
         'rejected' => 'مرفوض — يحتاج تعديل',
     ];
 
+    /**
+     * خطوات «آلية التسجيل» لكل دورة: [العنوان، التفاصيل، النوع، التوقيت]
+     * النوع trainee = تُنفّذ لكل متدرب، course = مرة واحدة للدورة.
+     * التوقيت: null = عند التسجيل، وإلا عدد الأيام بالنسبة لتاريخ البدء (−3 = قبلها بثلاثة أيام).
+     */
+    public const OPS_STEPS = [
+        'register' => ['تسجيل المتدرب', 'استمارة إلكترونية أو حضور مباشر', 'trainee', null],
+        'invoice' => ['إنشاء الفاتورة', 'مباشرة بعد التسجيل', 'trainee', null],
+        'invoice_sent' => ['إرسال الفاتورة + رابط المجموعة', 'في رسالة واحدة للمتدرب', 'trainee', null],
+        'welcome' => ['رسالة ترحيبية', 'ترحيب بالمتدرب هاتفيًا', 'trainee', null],
+        'prep_sheet' => ['إنشاء جدول التحضير', 'ومشاركته مع المدربين', 'course', -3],
+        'room' => ['تجهيز القاعة والملازم', 'تجهيز المكان والمواد', 'course', -3],
+        'reminder_1d' => ['رسالة تذكير', 'تذكير المتدربين قبل الدورة بيوم', 'trainee', -1],
+        'reminder_am' => ['تذكير صباح الدورة', 'تذكير المتدربين صباح يوم الدورة', 'trainee', 0],
+        'tvtc' => ['إضافة الأسماء في المؤسسة', 'في المؤسسة العامة للتدريب التقني والمهني', 'trainee', 0],
+    ];
+
+    /** خطوات المتدرب التي تُؤشَّر يدويًا (التسجيل نفسه = حالة «مقبول») */
+    public const TRAINEE_STEPS = ['invoice', 'invoice_sent', 'welcome', 'reminder_1d', 'reminder_am', 'tvtc'];
+
     /** الحقول التي يظهر فيها الإعلان؛ تعديل أيٍّ منها يعيد الإعلان لانتظار الاعتماد */
-    public const AD_FIELDS = ['title', 'accreditation_no', 'duration', 'hours', 'price', 'sale_price', 'offer_ends_at', 'start_date', 'contact_phone', 'mode', 'location'];
+    public const AD_FIELDS = ['title', 'accreditation_no', 'duration', 'schedule_days', 'schedule_time', 'trainer_name', 'hours', 'price', 'sale_price', 'offer_ends_at', 'start_date', 'contact_phone', 'mode', 'location'];
 
     /** الحقول التي تمس الخطة؛ تعديل أيٍّ منها يعيد الخطة لانتظار الاعتماد */
-    public const PLAN_FIELDS = ['title', 'start_date', 'duration', 'hours', 'price', 'sale_price', 'seats', 'mode', 'location'];
+    public const PLAN_FIELDS = ['title', 'start_date', 'duration', 'schedule_days', 'schedule_time', 'hours', 'price', 'sale_price', 'seats', 'mode', 'location'];
 
     protected $fillable = [
         'title', 'slug', 'category', 'summary', 'description', 'goal', 'target_audience', 'duration', 'hours',
@@ -39,11 +59,13 @@ class Program extends Model
         'external_link', 'registration_open', 'is_featured', 'is_active', 'sort',
         'accreditation_no', 'sale_price', 'offer_ends_at', 'contact_phone',
         'plan_status', 'plan_approved_by', 'plan_approved_at', 'ad_status', 'ad_approved_by', 'ad_approved_at', 'approval_note',
+        'schedule_days', 'schedule_time', 'trainer_name', 'group_link', 'ops',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'offer_ends_at' => 'date',
+        'ops' => 'array',
         'plan_approved_at' => 'datetime',
         'ad_approved_at' => 'datetime',
         'price' => 'decimal:2',
@@ -166,6 +188,34 @@ class Program extends Model
         }
 
         return 'https://wa.me/'.$digits.'?text='.rawurlencode('استفسار عن: '.$this->title);
+    }
+
+    /** المسؤولون عن خطوة: من الدورة نفسها، وإلا الافتراضي من الإعدادات */
+    public function opsAssignees(string $step): string
+    {
+        $own = $this->ops['assignees'][$step] ?? null;
+        if ($own !== null && $own !== '') {
+            return $own;
+        }
+        $defaults = json_decode((string) setting('ops_assignees', '{}'), true) ?: [];
+
+        return (string) ($defaults[$step] ?? '');
+    }
+
+    /** موعد الخطوة (تاريخ)، أو null إن كانت عند التسجيل أو لا يوجد تاريخ بدء */
+    public function opsDue(string $step): ?\Illuminate\Support\Carbon
+    {
+        $offset = self::OPS_STEPS[$step][3] ?? null;
+        if ($offset === null || ! $this->start_date) {
+            return null;
+        }
+
+        return $this->start_date->copy()->addDays($offset);
+    }
+
+    public function opsCourseDone(string $step): ?array
+    {
+        return $this->ops['done'][$step] ?? null;
     }
 
     public function getPlanStatusLabelAttribute(): string

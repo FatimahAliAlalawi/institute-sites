@@ -86,6 +86,9 @@
                         <div><dt>التصنيف</dt><dd>{{ $program->category_label }}</dd></div>
                         @if ($program->hours)<div><dt>الساعات</dt><dd>{{ $program->hours }}</dd></div>@endif
                         @if ($program->duration)<div><dt>المدة</dt><dd>{{ $program->duration }}</dd></div>@endif
+                        @if ($program->schedule_days)<div><dt>الأيام</dt><dd>{{ $program->schedule_days }}</dd></div>@endif
+                        @if ($program->schedule_time)<div><dt>الوقت</dt><dd>{{ $program->schedule_time }}</dd></div>@endif
+                        @if ($program->trainer_name)<div><dt>المدرب</dt><dd>{{ $program->trainer_name }}</dd></div>@endif
                         <div><dt>نوع التدريب</dt><dd>{{ $program->mode }}</dd></div>
                         @if ($program->location)<div><dt>المكان</dt><dd>{{ $program->location }}</dd></div>@endif
                         @if ($program->start_date)<div><dt>تاريخ البدء</dt><dd>{{ $program->start_date->translatedFormat('j F Y') }}</dd></div>@endif

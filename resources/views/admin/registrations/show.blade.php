@@ -44,6 +44,7 @@
                 @endif
                 @if ($registration->program)
                     <a href="{{ route('admin.programs.ad-card', $registration->program) }}" target="_blank" class="btn"><i class="fa-solid fa-bullhorn"></i> بيانات الدورة للرد</a>
+                    <a href="{{ route('admin.programs.ops', $registration->program) }}" class="btn"><i class="fa-solid fa-list-check"></i> تشغيل الدورة</a>
                 @endif
             </div>
         </div>

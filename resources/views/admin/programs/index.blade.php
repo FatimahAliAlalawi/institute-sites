@@ -54,6 +54,7 @@
                             <td>
                                 <div class="actions">
                                     <a href="{{ route('programs.show', $program) }}" target="_blank" class="btn btn-sm" title="عرض"><i class="fa-regular fa-eye"></i></a>
+                                    <a href="{{ route('admin.programs.ops', $program) }}" class="btn btn-sm" title="تشغيل الدورة (آلية التسجيل)"><i class="fa-solid fa-list-check"></i></a>
                                     <a href="{{ route('admin.programs.ad-card', $program) }}" target="_blank" class="btn btn-sm" title="بطاقة الإعلان و QR"><i class="fa-solid fa-bullhorn"></i></a>
                                     <a href="{{ route('admin.programs.edit', $program) }}" class="btn btn-sm"><i class="fa-regular fa-pen-to-square"></i> تعديل</a>
                                     @include('admin.partials.delete-button', ['action' => route('admin.programs.destroy', $program), 'label' => ''])
