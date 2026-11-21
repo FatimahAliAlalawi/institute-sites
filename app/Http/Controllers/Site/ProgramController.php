@@ -83,6 +83,14 @@ class ProgramController extends Controller
         return redirect()->away($program->whatsapp_url);
     }
 
+    /** ملف «أضف للتقويم» لأيام الدورة (للمتدرب والمدرب) */
+    public function ics(Program $program)
+    {
+        abort_unless($program->is_active && ($program->session_dates || $program->start_date), 404);
+
+        return \App\Support\Ics::response(\App\Support\Ics::build([$program], $program->title), 'course-'.$program->id.'.ics');
+    }
+
     public function show(Program $program)
     {
         abort_unless($program->is_active, 404);

@@ -54,5 +54,8 @@
         @if ($program->whatsapp_url)
             <a href="{{ $program->whatsapp_url }}" target="_blank" rel="noopener" class="btn btn-outline btn-sm"><i class="fa-brands fa-whatsapp"></i> استفسر</a>
         @endif
+        @if ($program->session_dates)
+            <a href="{{ route('programs.ics', $program) }}" class="btn btn-outline btn-sm" title="أضف أيام الدورة لتقويم جوالك"><i class="fa-regular fa-calendar-plus"></i> للتقويم</a>
+        @endif
     </div>
 </div>

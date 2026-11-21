@@ -181,6 +181,40 @@
         </div>
 
         <div class="card">
+            <h2>المدرب وتقويم الدورة</h2>
+            <div class="form-grid">
+                <div class="field">
+                    <label for="trainer_admin_id">حساب المدرب (للتحضير)</label>
+                    <select id="trainer_admin_id" name="trainer_admin_id">
+                        <option value="">— بدون —</option>
+                        @foreach (\App\Models\Admin::where('is_active', true)->orderBy('name')->get() as $a)
+                            <option value="{{ $a->id }}" @selected((int) old('trainer_admin_id', $program->trainer_admin_id) === $a->id)>{{ $a->name }}{{ $a->isTrainerOnly() ? ' (مدرب)' : '' }}</option>
+                        @endforeach
+                    </select>
+                    <div class="hint">المدرب يدخل لوحة التحكم ويرى تحضير دوراته فقط. أنشئ له حسابًا من «المستخدمون والصلاحيات» بدور فيه صلاحية «تحضير الدورات الحضورية» فقط.</div>
+                </div>
+                <div class="field">
+                    <label>أيام الأسبوع</label>
+                    <div class="checks">
+                        @foreach (\App\Models\Program::WEEKDAYS as $num => $dayName)
+                            <label><input type="checkbox" name="session_weekdays[]" value="{{ $num }}" @checked(in_array($num, (array) old('session_weekdays', collect($program->session_dates)->map(fn ($d) => \Illuminate\Support\Carbon::parse($d)->dayOfWeek)->unique()->all()), false))> {{ $dayName }}</label>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="field">
+                    <label for="session_count">عدد أيام الدورة</label>
+                    <input type="number" id="session_count" name="session_count" min="1" max="200" value="{{ old('session_count', count($program->session_dates) ?: null) }}" placeholder="مثال: 5">
+                    <label style="margin-top:8px;font-weight:500"><input type="checkbox" name="regenerate_sessions" value="1" @checked(! $program->exists || ! $program->session_dates)> ولّد التقويم من تاريخ البدء وأيام الأسبوع عند الحفظ</label>
+                </div>
+                <div class="field full">
+                    <label for="sessions_text">أيام الدورة في التقويم</label>
+                    <textarea id="sessions_text" name="sessions_text" rows="4" dir="ltr" placeholder="2026-12-06&#10;2026-12-08">{{ old('sessions_text', implode("\n", $program->session_dates)) }}</textarea>
+                    <div class="hint">تاريخ في كل سطر. تقدر تعدّلها يدويًا (إضافة يوم تعويضي أو حذف إجازة) بشرط إلغاء علامة «ولّد التقويم».@if ($program->session_dates) · <a href="{{ route('programs.ics', $program) }}">تنزيل ملف التقويم (.ics)</a>@endif</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
             <h2>الصورة والنشر</h2>
             <div class="form-grid">
                 @include('admin.partials.image-field', ['name' => 'image', 'label' => 'صورة البرنامج', 'value' => $program->image])

@@ -34,6 +34,12 @@ class Admin extends Model
         return in_array($permission, (array) ($this->role?->permissions ?? []), true);
     }
 
+    /** مدرب فقط: يملك التحضير ولا يملك إدارة البرامج، فيرى دوراته فقط */
+    public function isTrainerOnly(): bool
+    {
+        return ! $this->allows('programs') && $this->allows('course_attendance');
+    }
+
     public function canOpenRoute(?string $routeName): bool
     {
         return $this->allows(Permissions::requiredFor($routeName));

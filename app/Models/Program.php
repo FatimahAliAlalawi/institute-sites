@@ -62,13 +62,17 @@ class Program extends Model
         'external_link', 'registration_open', 'is_featured', 'is_active', 'sort',
         'accreditation_no', 'sale_price', 'offer_ends_at', 'contact_phone',
         'plan_status', 'plan_approved_by', 'plan_approved_at', 'ad_status', 'ad_approved_by', 'ad_approved_at', 'approval_note',
-        'schedule_days', 'schedule_time', 'trainer_name', 'group_link', 'ops',
+        'schedule_days', 'schedule_time', 'trainer_name', 'group_link', 'ops', 'trainer_admin_id', 'sessions',
     ];
+
+    /** أيام الأسبوع بترتيب الأسبوع السعودي (رقم Carbon => الاسم) */
+    public const WEEKDAYS = [0 => 'الأحد', 1 => 'الاثنين', 2 => 'الثلاثاء', 3 => 'الأربعاء', 4 => 'الخميس', 5 => 'الجمعة', 6 => 'السبت'];
 
     protected $casts = [
         'start_date' => 'date',
         'offer_ends_at' => 'date',
         'ops' => 'array',
+        'sessions' => 'array',
         'plan_approved_at' => 'datetime',
         'ad_approved_at' => 'datetime',
         'price' => 'decimal:2',
@@ -77,6 +81,68 @@ class Program extends Model
         'is_featured' => 'boolean',
         'is_active' => 'boolean',
     ];
+
+    /** حساب المدرب في لوحة التحكم (يرى تحضير هذه الدورة فقط) */
+    public function trainerAdmin()
+    {
+        return $this->belongsTo(Admin::class, 'trainer_admin_id');
+    }
+
+    /** أيام الدورة في التقويم مرتبة (نصوص Y-m-d) */
+    public function getSessionDatesAttribute(): array
+    {
+        $dates = array_values(array_unique(array_filter((array) ($this->sessions ?? []))));
+        sort($dates);
+
+        return $dates;
+    }
+
+    /** يولّد أيام الدورة من تاريخ البدء وأيام الأسبوع وعدد الأيام */
+    public static function generateSessions(\Illuminate\Support\Carbon $start, array $weekdays, int $count): array
+    {
+        $weekdays = array_map('intval', $weekdays);
+        if (! $weekdays || $count < 1) {
+            return [];
+        }
+        $dates = [];
+        $d = $start->copy()->startOfDay();
+        $guard = 0;
+        while (count($dates) < min($count, 200) && $guard++ < 1000) {
+            if (in_array($d->dayOfWeek, $weekdays, true)) {
+                $dates[] = $d->toDateString();
+            }
+            $d->addDay();
+        }
+
+        return $dates;
+    }
+
+    /** وقت الجلسة من نص «وقت الدورة» مثل «5:00 م — 8:00 م» => [[17,0],[20,0]] أو null */
+    public function getSessionTimesAttribute(): ?array
+    {
+        $text = strtr((string) $this->schedule_time, ['٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4', '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9', '٫' => ':']);
+        if (! preg_match_all('/(\d{1,2})(?::(\d{2}))?\s*(ص|م|am|pm|AM|PM)?/u', $text, $m, PREG_SET_ORDER) || count($m) < 2) {
+            return null;
+        }
+        $out = [];
+        foreach (array_slice($m, 0, 2) as $i => $p) {
+            $h = (int) $p[1];
+            $min = (int) ($p[2] ?? 0);
+            $suffix = ($p[3] ?? '') ?: ($m[1][3] ?? '');
+            if (in_array($suffix, ['م', 'pm', 'PM'], true) && $h < 12) {
+                $h += 12;
+            }
+            if (in_array($suffix, ['ص', 'am', 'AM'], true) && $h === 12) {
+                $h = 0;
+            }
+            if ($h > 23 || $min > 59) {
+                return null;
+            }
+            $out[] = [$h, $min];
+        }
+
+        return $out;
+    }
 
     public function registrations()
     {

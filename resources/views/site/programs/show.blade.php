@@ -112,6 +112,9 @@
                     @else
                         <div class="alert alert-error" style="margin:0;text-align:center">{{ $program->is_full ? 'اكتملت المقاعد — تواصل معنا للدورة القادمة' : 'التسجيل مغلق حاليًا' }}</div>
                     @endif
+                    @if ($program->session_dates || $program->start_date)
+                        <a href="{{ route('programs.ics', $program) }}" class="btn btn-outline btn-block" style="margin-top:10px"><i class="fa-regular fa-calendar-plus"></i> أضف أيام الدورة لتقويمك</a>
+                    @endif
                     @if (setting('whatsapp'))
                         <a href="https://wa.me/{{ preg_replace('/\D/', '', setting('whatsapp')) }}?text={{ rawurlencode('استفسار عن برنامج: '.$program->title) }}" target="_blank" rel="noopener" class="btn btn-outline btn-block" style="margin-top:10px">
                             <i class="fa-brands fa-whatsapp"></i> استفسر عبر واتساب

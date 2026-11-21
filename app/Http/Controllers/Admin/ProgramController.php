@@ -146,6 +146,11 @@ class ProgramController extends Controller
             'schedule_days' => 'nullable|string|max:120',
             'schedule_time' => 'nullable|string|max:80',
             'trainer_name' => 'nullable|string|max:120',
+            'trainer_admin_id' => 'nullable|exists:admins,id',
+            'session_weekdays' => 'nullable|array',
+            'session_weekdays.*' => 'integer|between:0,6',
+            'session_count' => 'nullable|integer|min:1|max:200',
+            'sessions_text' => 'nullable|string|max:5000',
             'hours' => 'nullable|string|max:100',
             'location' => 'nullable|string|max:190',
             'mode' => ['required', Rule::in(Program::MODES)],
@@ -164,7 +169,32 @@ class ProgramController extends Controller
             'sort' => 'nullable|integer',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
         ]);
-        unset($data['image'], $data['approval_note']);
+        unset($data['image'], $data['approval_note'], $data['session_weekdays'], $data['session_count'], $data['sessions_text']);
+
+        // تقويم الدورة: توليد من أيام الأسبوع وعدد الأيام، أو قائمة يدوية (تاريخ في كل سطر)
+        $weekdays = array_map('intval', (array) $request->input('session_weekdays', []));
+        if ($request->boolean('regenerate_sessions') && $weekdays && $request->filled('start_date') && $request->filled('session_count')) {
+            $data['sessions'] = Program::generateSessions(\Illuminate\Support\Carbon::parse($request->input('start_date')), $weekdays, (int) $request->input('session_count'));
+            if (! $request->filled('schedule_days')) {
+                $data['schedule_days'] = implode(' - ', array_map(fn ($d) => Program::WEEKDAYS[$d], array_values(array_intersect(array_keys(Program::WEEKDAYS), $weekdays))));
+            }
+        } else {
+            $dates = [];
+            foreach (preg_split('/[\s,،]+/u', (string) $request->input('sessions_text', '')) as $line) {
+                try {
+                    if (trim($line) !== '') {
+                        $dates[] = \Illuminate\Support\Carbon::parse(trim($line))->toDateString();
+                    }
+                } catch (\Throwable) {
+                }
+            }
+            $dates = array_values(array_unique($dates));
+            sort($dates);
+            $data['sessions'] = $dates ?: null;
+        }
+        if (! empty($data['trainer_admin_id']) && empty($data['trainer_name'])) {
+            $data['trainer_name'] = \App\Models\Admin::find($data['trainer_admin_id'])?->name;
+        }
         if (isset($data['sale_price'], $data['price']) && (float) $data['sale_price'] >= (float) $data['price']) {
             $data['sale_price'] = null; // سعر الخصم يجب أن يكون أقل من الرسوم
         }

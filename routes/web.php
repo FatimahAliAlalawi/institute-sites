@@ -21,6 +21,7 @@ Route::middleware('installed')->group(function () {
     Route::get('/plan', [Site\ProgramController::class, 'plan'])->name('programs.plan');
     Route::get('/go/{id}', [Site\ProgramController::class, 'short'])->whereNumber('id')->name('programs.short');
     Route::get('/go/{id}/wa', [Site\ProgramController::class, 'whatsapp'])->whereNumber('id')->name('programs.whatsapp');
+    Route::get('/programs/{program:slug}/calendar.ics', [Site\ProgramController::class, 'ics'])->name('programs.ics');
     Route::get('/programs/{program:slug}', [Site\ProgramController::class, 'show'])->name('programs.show');
 
     Route::get('/register', [Site\RegistrationController::class, 'create'])->name('register');
@@ -93,6 +94,7 @@ Route::middleware('installed')->group(function () {
             Route::post('programs/{program}/ops/email', [Admin\OpsController::class, 'email'])->name('programs.ops.email');
             Route::post('programs/{program}/ops/mark', [Admin\OpsController::class, 'mark'])->name('programs.ops.mark');
             Route::get('course-attendance', [Admin\CourseAttendanceController::class, 'index'])->name('course-attendance.index');
+            Route::get('course-attendance/calendar.ics', [Admin\CourseAttendanceController::class, 'ics'])->name('course-attendance.ics');
             Route::get('course-attendance/{program}', [Admin\CourseAttendanceController::class, 'show'])->name('course-attendance.show');
             Route::post('course-attendance/{program}', [Admin\CourseAttendanceController::class, 'store'])->name('course-attendance.store');
             Route::get('programs/{program}/ad-card', [Admin\ProgramController::class, 'adCard'])->name('programs.ad-card');

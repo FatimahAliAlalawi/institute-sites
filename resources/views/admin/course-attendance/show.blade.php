@@ -3,7 +3,8 @@
 @section('title', 'تحضير: '.$program->title)
 
 @section('actions')
-    <a href="{{ route('admin.course-attendance.index') }}" class="btn">كل الدورات</a>
+    <a href="{{ route('admin.course-attendance.index') }}" class="btn"><i class="fa-regular fa-calendar"></i> التقويم</a>
+    <a href="{{ route('admin.course-attendance.ics', ['program' => $program->id]) }}" class="btn"><i class="fa-regular fa-calendar-plus"></i> أضف للتقويم</a>
     @if (isset($currentAdmin) && $currentAdmin->allows('programs'))
         <a href="{{ route('admin.programs.ops', $program) }}" class="btn"><i class="fa-solid fa-list-check"></i> تشغيل الدورة</a>
     @endif
@@ -16,11 +17,16 @@
             <input type="date" id="date" name="date" value="{{ $date }}" onchange="this.form.submit()">
         </div>
         @if ($dates->isNotEmpty())
-            <div class="sub">أيام مسجّلة:
+            <div class="sub" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">أيام الدورة:
                 @foreach ($dates as $d)
-                    <a href="{{ route('admin.course-attendance.show', [$program, 'date' => $d]) }}" @class(['badge', 'b-on' => $d === $date, 'b-off' => $d !== $date])>{{ \Illuminate\Support\Carbon::parse($d)->translatedFormat('j F') }}</a>
+                    @php($done = in_array($d, $recordedDates, true))
+                    @php($cls = $d === $date ? 'b-new' : ($done ? 'b-on' : ($d < now()->toDateString() ? 'b-rejected' : 'b-off')))
+                    <a href="{{ route('admin.course-attendance.show', [$program, 'date' => $d]) }}" class="badge {{ $cls }}" style="text-decoration:none" title="{{ $done ? 'تم التحضير' : ($d < now()->toDateString() ? 'فات بدون تحضير' : 'قادم') }}">{{ $done ? '✓ ' : '' }}{{ \Illuminate\Support\Carbon::parse($d)->translatedFormat('D j/n') }}</a>
                 @endforeach
             </div>
+        @endif
+        @if ($sessions && ! in_array($date, $sessions, true))
+            <div class="alert alert-error" style="margin:0">هذا اليوم ليس من أيام الدورة في التقويم.</div>
         @endif
     </form>
 
