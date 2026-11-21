@@ -90,6 +90,11 @@ Route::middleware('installed')->group(function () {
 
             Route::get('programs/{program}/ops', [Admin\OpsController::class, 'show'])->name('programs.ops');
             Route::post('programs/{program}/ops', [Admin\OpsController::class, 'update'])->name('programs.ops.update');
+            Route::post('programs/{program}/ops/email', [Admin\OpsController::class, 'email'])->name('programs.ops.email');
+            Route::post('programs/{program}/ops/mark', [Admin\OpsController::class, 'mark'])->name('programs.ops.mark');
+            Route::get('course-attendance', [Admin\CourseAttendanceController::class, 'index'])->name('course-attendance.index');
+            Route::get('course-attendance/{program}', [Admin\CourseAttendanceController::class, 'show'])->name('course-attendance.show');
+            Route::post('course-attendance/{program}', [Admin\CourseAttendanceController::class, 'store'])->name('course-attendance.store');
             Route::get('programs/{program}/ad-card', [Admin\ProgramController::class, 'adCard'])->name('programs.ad-card');
             Route::get('programs/{program}/qr/{type}', [Admin\ProgramController::class, 'qr'])->whereIn('type', ['page', 'wa'])->name('programs.qr');
             Route::resource('programs', Admin\ProgramController::class)->except('show');
@@ -190,6 +195,7 @@ Route::middleware('installed')->group(function () {
 
             Route::get('settings', [Admin\SettingController::class, 'edit'])->name('settings.edit');
             Route::put('settings', [Admin\SettingController::class, 'update'])->name('settings.update');
+            Route::post('settings/test-mail', [Admin\SettingController::class, 'testMail'])->name('settings.test-mail');
 
             Route::get('account', [Admin\AccountController::class, 'edit'])->name('account.edit');
             Route::put('account', [Admin\AccountController::class, 'update'])->name('account.update');

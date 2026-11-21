@@ -31,6 +31,13 @@ class AppServiceProvider extends ServiceProvider
         // أسماء الأشهر بالعربي في التواريخ
         Carbon::setLocale(config('app.locale', 'ar'));
 
+        // بريد المعهد من الإعدادات (لوحة التحكم ← الإعدادات ← البريد الإلكتروني)
+        try {
+            \App\Support\MailSettings::apply();
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
         Paginator::defaultView('partials.pagination');
         Paginator::defaultSimpleView('partials.pagination');
 
@@ -39,6 +46,11 @@ class AppServiceProvider extends ServiceProvider
             $this->app->terminating(function () {
                 try {
                     \App\Support\TutorSync::autoRun();
+                } catch (\Throwable $e) {
+                    report($e);
+                }
+                try {
+                    \App\Support\AutoReminders::autoRun();
                 } catch (\Throwable $e) {
                     report($e);
                 }

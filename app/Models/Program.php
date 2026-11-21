@@ -47,6 +47,9 @@ class Program extends Model
     /** خطوات المتدرب التي تُؤشَّر يدويًا (التسجيل نفسه = حالة «مقبول») */
     public const TRAINEE_STEPS = ['invoice', 'invoice_sent', 'welcome', 'reminder_1d', 'reminder_am', 'tvtc'];
 
+    /** رسائل بعد بدء الدورة تُتابع في نفس الجدول */
+    public const AFTER_STEPS = ['attendance' => 'تقرير الحضور', 'thanks' => 'الشكر بعد الدورة'];
+
     /** الحقول التي يظهر فيها الإعلان؛ تعديل أيٍّ منها يعيد الإعلان لانتظار الاعتماد */
     public const AD_FIELDS = ['title', 'accreditation_no', 'duration', 'schedule_days', 'schedule_time', 'trainer_name', 'hours', 'price', 'sale_price', 'offer_ends_at', 'start_date', 'contact_phone', 'mode', 'location'];
 

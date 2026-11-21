@@ -94,6 +94,22 @@ class SettingController extends Controller
             'zoom_client_secret' => ['secret', 'Client Secret', 'يُحفظ ولا يُعرض مرة أخرى.'],
             'zoom_user' => ['text', 'بريد حساب المضيف في Zoom (اختياري)', 'اتركه فارغًا لاستخدام صاحب التطبيق، أو اكتب بريد مدرب في نفس حساب Zoom.'],
         ],
+        'البريد الإلكتروني (رسائل المتدربين)' => [
+            'mail_host' => ['text', 'خادم البريد (SMTP Host)', 'من cPanel ← حسابات البريد ← Connect Devices. غالبًا: mail.اسم-الموقع.com'],
+            'mail_port' => ['text', 'المنفذ (Port)', '465 (SSL) هو الأكثر شيوعًا في cPanel، أو 587'],
+            'mail_username' => ['text', 'البريد المرسِل (اسم المستخدم)', 'مثل info@albsaer.com — أنشئه من cPanel ← Email Accounts'],
+            'mail_password' => ['secret', 'كلمة مرور البريد', 'تُحفظ ولا تُعرض مرة أخرى. اتركها فارغة للإبقاء على المحفوظة.'],
+            'mail_from_name' => ['text', 'اسم المرسل الظاهر', 'مثل: معهد البصائر العالي للتدريب'],
+            'auto_reminders' => ['bool', 'تذكير تلقائي بالإيميل: قبل الدورة بيوم (بعد 4 العصر) وصباح يوم الدورة (من 7 صباحًا)'],
+        ],
+        'قوالب رسائل المتدربين' => [
+            'msg_invoice_sent' => ['textarea', 'التأكيد مع الفاتورة ورابط المجموعة', 'المتغيرات: {الاسم} {الاسم_الكامل} {الدورة} {رقم_الاعتماد} {التاريخ} {الأيام} {الوقت} {المدرب} {المكان} {رابط_المجموعة} {رقم_الفاتورة} {رقم_المعهد} {المعهد} {رابط_الخطة} {أيام_الحضور} {أيام_الدورة} {ملاحظة_الحضور}'],
+            'msg_welcome' => ['textarea', 'الترحيب'],
+            'msg_reminder_1d' => ['textarea', 'التذكير قبل الدورة بيوم'],
+            'msg_reminder_am' => ['textarea', 'تذكير صباح الدورة'],
+            'msg_attendance' => ['textarea', 'تقرير الحضور'],
+            'msg_thanks' => ['textarea', 'الشكر بعد الدورة'],
+        ],
         'الألوان' => [
             'color_primary' => ['color', 'اللون الأساسي'],
             'color_secondary' => ['color', 'اللون الثانوي'],
@@ -148,5 +164,23 @@ class SettingController extends Controller
         Setting::put($values);
 
         return back()->with('status', 'تم حفظ الإعدادات.');
+    }
+
+    /** إرسال رسالة تجربة للتأكد من إعدادات البريد */
+    public function testMail(Request $request)
+    {
+        $to = $request->validate(['to' => 'required|email'])['to'];
+        if (! \App\Support\MailSettings::configured()) {
+            return back()->withErrors(['to' => 'أكمل إعدادات البريد واحفظها أولًا.']);
+        }
+        try {
+            \App\Support\MailSettings::apply();
+            \Illuminate\Support\Facades\Mail::to($to)->send(new \App\Mail\TraineeMessage('رسالة تجربة من '.setting('site_name'), "هذه رسالة تجربة.
+إعدادات البريد في الموقع تعمل ✅"));
+        } catch (\Throwable $e) {
+            return back()->withErrors(['to' => 'تعذّر الإرسال: '.mb_substr($e->getMessage(), 0, 300)]);
+        }
+
+        return back()->with('status', 'أُرسلت رسالة التجربة إلى '.$to.'. افتح بريدك (وتأكد من مجلد الرسائل غير المرغوبة).');
     }
 }

@@ -3,6 +3,7 @@
 @section('title', 'تشغيل الدورة: '.$program->title)
 
 @section('actions')
+    <a href="{{ route('admin.course-attendance.show', $program) }}" class="btn"><i class="fa-solid fa-clipboard-check"></i> التحضير</a>
     <a href="{{ route('admin.registrations.index', ['program' => $program->id]) }}" class="btn"><i class="fa-solid fa-user-plus"></i> طلبات الدورة</a>
     <a href="{{ route('admin.programs.edit', $program) }}" class="btn"><i class="fa-regular fa-pen-to-square"></i> بيانات الدورة</a>
 @endsection
@@ -84,16 +85,26 @@
         </div>
 
         <div class="card">
-            <h2>متابعة كل متدرب</h2>
+            <h2>متابعة كل متدرب وإرسال الرسائل</h2>
             @if ($trainees->isEmpty())
                 <div class="empty">لا يوجد متدربون مقبولون في هذه الدورة بعد. المتدرب يظهر هنا لما تكون حالته «مقبول (سجّل ودفع)».</div>
             @else
+                @php($msgTypes = \App\Support\TraineeMessages::TYPES)
+                @php($cols = array_merge(array_combine($traineeSteps, array_map(fn ($s) => $steps[$s][0], $traineeSteps)), \App\Models\Program::AFTER_STEPS))
+                <p class="sub" style="margin-top:0">
+                    <i class="fa-brands fa-whatsapp" style="color:#128C7E"></i> يفتح واتساب والرسالة مكتوبة جاهزة، وتنحفظ الخطوة كمنفّذة.
+                    @if (\App\Support\MailSettings::configured())
+                        · <i class="fa-regular fa-envelope"></i> أزرار الإيميل أسفل الجدول ترسل لكل من لم تصله الرسالة.
+                    @else
+                        · لتفعيل الإرسال بالإيميل: <a href="{{ route('admin.settings.edit') }}#mail">الإعدادات ← البريد الإلكتروني</a>.
+                    @endif
+                </p>
                 <div class="table-wrap">
                     <table>
                         <tr>
                             <th>المتدرب</th>
-                            @foreach ($traineeSteps as $s)
-                                <th style="text-align:center;font-size:12px">{{ str_pad(array_search($s, array_keys($steps)) + 1, 2, '0', STR_PAD_LEFT) }}<br>{{ $steps[$s][0] }}</th>
+                            @foreach ($cols as $s => $label)
+                                <th style="text-align:center;font-size:12px">{{ isset($steps[$s]) ? str_pad(array_search($s, array_keys($steps)) + 1, 2, '0', STR_PAD_LEFT) : '+' }}<br>{{ $label }}</th>
                             @endforeach
                         </tr>
                         @foreach ($trainees as $t)
@@ -101,17 +112,21 @@
                                 <td>
                                     <a href="{{ route('admin.registrations.show', $t) }}"><b>{{ $t->name }}</b></a>
                                     <div class="sub" dir="ltr" style="text-align:right">{{ $t->phone }} @if ($t->invoice_no)· {{ $t->invoice_no }}@endif</div>
+                                    @unless ($t->email)<div class="sub" style="color:#b54708">بدون بريد</div>@endunless
                                 </td>
-                                @foreach ($traineeSteps as $s)
-                                    <td style="text-align:center">
-                                        <input type="checkbox" name="steps[{{ $t->id }}][{{ $s }}]" value="1" @checked($t->stepDone($s)) title="{{ $t->steps[$s]['by'] ?? '' }} {{ $t->steps[$s]['at'] ?? '' }}">
+                                @foreach ($cols as $s => $label)
+                                    <td style="text-align:center;white-space:nowrap">
+                                        <input type="checkbox" id="cb-{{ $t->id }}-{{ $s }}" name="steps[{{ $t->id }}][{{ $s }}]" value="1" @checked($t->stepDone($s)) title="{{ $t->steps[$s]['by'] ?? '' }} {{ $t->steps[$s]['at'] ?? '' }}">
+                                        @if (isset($msgTypes[$s]))
+                                            <a href="{{ \App\Support\TraineeMessages::whatsappUrl($t, \App\Support\TraineeMessages::render($s, $t, $program)) }}" target="_blank" rel="noopener" class="wa-send" data-reg="{{ $t->id }}" data-type="{{ $s }}" title="إرسال «{{ $msgTypes[$s][0] }}» واتساب" style="color:#128C7E;margin-inline-start:4px"><i class="fa-brands fa-whatsapp"></i></a>
+                                        @endif
                                     </td>
                                 @endforeach
                             </tr>
                         @endforeach
                     </table>
                 </div>
-                <p class="sub">مرّر المؤشر على أي علامة لترى من نفّذها ومتى. خطوة «إنشاء الفاتورة» تُؤشَّر تلقائيًا إذا كُتب رقم الفاتورة في طلب المتدرب.</p>
+                <p class="sub">مرّر المؤشر على أي علامة لترى من نفّذها ومتى. خطوة «إنشاء الفاتورة» تُؤشَّر تلقائيًا إذا كُتب رقم الفاتورة في طلب المتدرب. أي نقص في الرسائل (رابط المجموعة، الأيام، الوقت) يظهر «—»، فأكمله في بيانات الدورة قبل الإرسال.</p>
             @endif
         </div>
 
@@ -119,4 +134,34 @@
             <button type="submit" class="btn btn-primary"><i class="fa-regular fa-floppy-disk"></i> حفظ</button>
         </div>
     </form>
+
+    @if ($trainees->isNotEmpty() && \App\Support\MailSettings::configured())
+        <div class="card">
+            <h2><i class="fa-regular fa-envelope"></i> إرسال بالإيميل</h2>
+            <p class="sub" style="margin-top:0">يرسل الرسالة لكل متدرب عنده بريد ولم تُنفّذ له الخطوة بعد، ويؤشّرها تلقائيًا. «تقرير الحضور» يُرسل للجميع في كل مرة.</p>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+                @foreach (\App\Support\TraineeMessages::TYPES as $type => [$label])
+                    <form method="post" action="{{ route('admin.programs.ops.email', $program) }}" onsubmit="return confirm('إرسال «{{ $label }}» بالإيميل؟')">
+                        @csrf
+                        <input type="hidden" name="type" value="{{ $type }}">
+                        <button class="btn btn-sm">{{ $label }}</button>
+                    </form>
+                @endforeach
+            </div>
+        </div>
+    @endif
+
+    <script>
+        document.querySelectorAll('.wa-send').forEach(function (a) {
+            a.addEventListener('click', function () {
+                var cb = document.getElementById('cb-' + a.dataset.reg + '-' + a.dataset.type);
+                if (cb) cb.checked = true;
+                var fd = new FormData();
+                fd.append('_token', '{{ csrf_token() }}');
+                fd.append('registration_id', a.dataset.reg);
+                fd.append('type', a.dataset.type);
+                fetch('{{ route('admin.programs.ops.mark', $program) }}', {method: 'POST', body: fd, headers: {'Accept': 'application/json'}});
+            });
+        });
+    </script>
 @endsection

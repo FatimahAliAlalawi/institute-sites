@@ -20,6 +20,7 @@
         ['admin.pages.index', 'fa-regular fa-file-lines', 'الصفحات', 'admin.pages.*'],
         ['admin.menus.index', 'fa-solid fa-bars-staggered', 'القوائم', 'admin.menus.*'],
         ['admin.programs.index', 'fa-solid fa-graduation-cap', 'البرامج التدريبية', 'admin.programs.*'],
+        ['admin.course-attendance.index', 'fa-solid fa-clipboard-check', 'تحضير الدورات الحضورية', 'admin.course-attendance.*'],
         ['admin.approvals.index', 'fa-solid fa-stamp', 'اعتماد الخطة والإعلانات', 'admin.approvals.*', $badges['approvals'] ?? 0],
         ['admin.posts.index', 'fa-regular fa-newspaper', 'الأخبار', 'admin.posts.*'],
         ['admin.partners.index', 'fa-regular fa-handshake', 'الشركاء', 'admin.partners.*'],

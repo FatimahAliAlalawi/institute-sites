@@ -50,7 +50,7 @@
                             <div @class(['field', 'full' => $type === 'textarea'])>
                                 <label for="{{ $key }}">{{ $label }}</label>
                                 @if ($type === 'textarea')
-                                    <textarea id="{{ $key }}" name="{{ $key }}">{{ old($key, setting($key)) }}</textarea>
+                                    <textarea id="{{ $key }}" name="{{ $key }}" @if (str_starts_with($key, 'msg_')) rows="6" @endif>{{ old($key, setting($key, str_starts_with($key, 'msg_') ? (\App\Support\TraineeMessages::DEFAULTS[substr($key, 4)] ?? '') : null)) }}</textarea>
                                 @elseif ($type === 'color')
                                     <div class="actions">
                                         <input type="color" id="{{ $key }}" value="{{ old($key, setting($key, '#3F3592')) }}" oninput="this.nextElementSibling.value=this.value">
@@ -69,6 +69,16 @@
 
         <div class="form-foot sticky-foot">
             <button type="submit" class="btn btn-primary"><i class="fa-regular fa-floppy-disk"></i> حفظ كل الإعدادات</button>
+        </div>
+    </form>
+
+    <form class="card" method="post" action="{{ route('admin.settings.test-mail') }}" id="mail">
+        @csrf
+        <h2>تجربة البريد</h2>
+        <p class="sub" style="margin-top:0">بعد حفظ إعدادات البريد، أرسل رسالة تجربة لبريدك للتأكد إنها تشتغل.</p>
+        <div class="actions">
+            <input type="email" name="to" value="{{ old('to', setting('email')) }}" dir="ltr" placeholder="your@email.com" required style="min-width:240px">
+            <button class="btn" type="submit"><i class="fa-regular fa-paper-plane"></i> إرسال تجربة</button>
         </div>
     </form>
 @endsection

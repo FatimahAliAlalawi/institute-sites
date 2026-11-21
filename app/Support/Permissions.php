@@ -21,6 +21,7 @@ class Permissions
             'students' => 'الطلاب',
             'enrollments' => 'الاشتراكات والمدفوعات',
             'attendance' => 'التحضير',
+            'course_attendance' => 'تحضير الدورات الحضورية (للمدربين)',
             'lms_reports' => 'نتائج الاختبارات والشهادات والتقييمات',
         ],
         'المبيعات والتسويق' => [
@@ -50,6 +51,7 @@ class Permissions
         'students' => ['admin.students.'],
         'enrollments' => ['admin.enrollments.'],
         'attendance' => ['admin.attendance.'],
+        'course_attendance' => ['admin.course-attendance.'],
         'lms_reports' => ['admin.quiz-attempts.', 'admin.certificates.', 'admin.reviews.'],
         'orders' => ['admin.orders.'],
         'marketing' => ['admin.coupons.', 'admin.marketing.'],
