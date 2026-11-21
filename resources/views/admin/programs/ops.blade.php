@@ -12,6 +12,7 @@
     $steps = \App\Models\Program::OPS_STEPS;
     $traineeSteps = \App\Models\Program::TRAINEE_STEPS;
     $total = $trainees->count();
+    $staff = \App\Models\Admin::where('is_active', true)->get();
     $today = now()->startOfDay();
     $phase = fn ($offset) => match (true) {
         $offset === null => 'عند كل تسجيل',
@@ -56,7 +57,11 @@
                             <td><b>{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</b></td>
                             <td><b>{{ $title }}</b><div class="sub">{{ $detail }}</div></td>
                             <td class="sub" style="white-space:nowrap">{{ $due ? $due->format('Y-m-d') : 'مع كل متدرب' }}@if ($late)<div style="color:#b42318;font-weight:700">متأخرة</div>@endif</td>
-                            <td><input type="text" name="assignees[{{ $key }}]" value="{{ old("assignees.$key", $program->opsAssignees($key)) }}" placeholder="اسم المسؤول" style="min-width:170px"></td>
+                            <td>
+                                <input type="text" name="assignees[{{ $key }}]" value="{{ old("assignees.$key", $program->opsAssignees($key)) }}" placeholder="اسم المسؤول" style="min-width:170px">
+                                @php($linked = $staff->filter(fn ($a) => \App\Support\TaskBoard::matches($a, $program->opsAssignees($key))))
+                                <div class="sub">@if ($linked->isNotEmpty())<i class="fa-solid fa-link"></i> {{ $linked->pluck('name')->join('، ') }}@elseif ($program->opsAssignees($key))<span style="color:#b54708">غير مربوط بحساب</span>@endif</div>
+                            </td>
                             <td style="white-space:nowrap">
                                 @if ($kind === 'course')
                                     @php($d = $program->opsCourseDone($key))
@@ -80,6 +85,7 @@
                 </div>
                 <div class="field checks" style="align-self:end">
                     <label><input type="checkbox" name="save_default" value="1"> احفظ أسماء المسؤولين كافتراضي لكل الدورات</label>
+                    <div class="hint">اكتب الأسماء كما في حسابات الموظفين حتى تظهر المهمة في «مهامي» عند كل موظف. «غير مربوط بحساب» يعني ما فيه حساب بهذا الاسم.</div>
                 </div>
             </div>
         </div>

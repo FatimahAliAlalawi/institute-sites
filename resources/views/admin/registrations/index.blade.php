@@ -4,6 +4,7 @@
 
 @section('actions')
     <a href="{{ route('admin.registrations.create', array_filter(['program' => is_numeric(request('program')) ? request('program') : null])) }}" class="btn btn-primary"><i class="fa-solid fa-user-plus"></i> إضافة مهتم</a>
+    <a href="{{ route('admin.registrations.import') }}" class="btn"><i class="fa-solid fa-file-import"></i> نقل من نموذج Google / Excel</a>
     <a href="{{ route('admin.registrations.export', request()->query()) }}" class="btn"><i class="fa-solid fa-file-excel"></i> تصدير Excel</a>
 @endsection
 

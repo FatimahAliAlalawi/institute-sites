@@ -24,7 +24,7 @@ class Registration extends Model
     /** حالات تحجز مقعدًا في الدورة */
     public const SEAT_STATUSES = ['accepted', 'completed'];
 
-    public const SOURCES = ['الموقع', 'واتساب', 'إعلان ممول', 'إنستغرام', 'سناب شات', 'إكس', 'صديق أو معرفة', 'اتصال هاتفي', 'زيارة للمعهد', 'متدرب سابق', 'أخرى'];
+    public const SOURCES = ['الموقع', 'نموذج Google', 'ملف Excel', 'واتساب', 'إعلان ممول', 'إنستغرام', 'سناب شات', 'إكس', 'صديق أو معرفة', 'اتصال هاتفي', 'زيارة للمعهد', 'متدرب سابق', 'أخرى'];
 
     public const ATTENDANCE = [
         'confirmed' => 'أكّد الحضور',
@@ -52,6 +52,21 @@ class Registration extends Model
         }
 
         return ! empty($this->steps[$step]);
+    }
+
+    /** الجوال بصيغة 05XXXXXXXX إن أمكن (يقبل الأرقام العربية و 966) */
+    public static function normalizePhone(string $phone): string
+    {
+        $digits = preg_replace('/\D/', '', strtr($phone, ['٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4', '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9']));
+        if (str_starts_with($digits, '009665')) {
+            $digits = '0'.substr($digits, 5);
+        } elseif (str_starts_with($digits, '9665')) {
+            $digits = '0'.substr($digits, 3);
+        } elseif (str_starts_with($digits, '5') && strlen($digits) === 9) {
+            $digits = '0'.$digits;
+        }
+
+        return $digits ?: trim($phone);
     }
 
     public function program()

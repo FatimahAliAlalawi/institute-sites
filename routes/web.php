@@ -101,12 +101,19 @@ Route::middleware('installed')->group(function () {
             Route::get('programs/{program}/qr/{type}', [Admin\ProgramController::class, 'qr'])->whereIn('type', ['page', 'wa'])->name('programs.qr');
             Route::resource('programs', Admin\ProgramController::class)->except('show');
             Route::get('approvals', [Admin\ApprovalController::class, 'index'])->name('approvals.index');
+            Route::get('my-tasks', [Admin\TaskController::class, 'mine'])->name('my-tasks');
+            Route::get('team', [Admin\TaskController::class, 'team'])->name('team.index');
             Route::post('approvals/{program}', [Admin\ApprovalController::class, 'decide'])->name('approvals.decide');
             Route::resource('posts', Admin\PostController::class)->except('show');
             Route::resource('partners', Admin\PartnerController::class)->except('show');
             Route::resource('faqs', Admin\FaqController::class)->except('show');
 
             Route::get('registrations/export', [Admin\RegistrationController::class, 'export'])->name('registrations.export');
+            Route::get('registrations/import', [Admin\RegistrationImportController::class, 'show'])->name('registrations.import');
+            Route::post('registrations/import/link', [Admin\RegistrationImportController::class, 'link'])->name('registrations.import.link');
+            Route::post('registrations/import/map', [Admin\RegistrationImportController::class, 'map'])->name('registrations.import.map');
+            Route::post('registrations/import/sync', [Admin\RegistrationImportController::class, 'sync'])->name('registrations.import.sync');
+            Route::post('registrations/import/upload', [Admin\RegistrationImportController::class, 'upload'])->name('registrations.import.upload');
             Route::resource('registrations', Admin\RegistrationController::class)->only(['index', 'create', 'store', 'show', 'update', 'destroy']);
             Route::resource('messages', Admin\MessageController::class)->only(['index', 'show', 'destroy']);
 

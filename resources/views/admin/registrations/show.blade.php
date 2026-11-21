@@ -67,8 +67,8 @@
                     <label for="program_id">الدورة</label>
                     <select id="program_id" name="program_id">
                         <option value="">تسجيل عام</option>
-                        @foreach (\App\Models\Program::active()->ordered()->get(['id', 'title']) as $p)
-                            <option value="{{ $p->id }}" @selected((int) old('program_id', $registration->program_id) === $p->id)>{{ $p->title }}</option>
+                        @foreach (\App\Models\Program::active()->orderByRaw('start_date is null')->orderBy('start_date')->get(['id', 'title', 'start_date']) as $p)
+                            <option value="{{ $p->id }}" @selected((int) old('program_id', $registration->program_id) === $p->id)>{{ $p->title }} — {{ $p->start_date ? 'تبدأ '.$p->start_date->format('Y-m-d') : 'بدون تاريخ بداية' }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -89,6 +89,7 @@
                 <div class="field" style="margin-bottom:12px">
                     <label for="invoice_no">رقم الفاتورة</label>
                     <input type="text" id="invoice_no" name="invoice_no" value="{{ old('invoice_no', $registration->invoice_no) }}" dir="ltr">
+                    <div class="hint">كتابة رقم الفاتورة = اعتمادها: يُقبل المتدرب ويُضاف للدورة المختارة تلقائيًا (لازم تكون الدورة محددة ولها تاريخ بداية).</div>
                 </div>
                 <div class="field" style="margin-bottom:12px">
                     <label for="attendance">تأكيد الحضور (قبل الدورة بيومين)</label>

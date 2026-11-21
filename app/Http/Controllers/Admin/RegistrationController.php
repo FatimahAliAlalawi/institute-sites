@@ -78,6 +78,22 @@ class RegistrationController extends Controller
             'program_id' => 'nullable|exists:programs,id',
         ]);
 
+        // اعتماد الفاتورة = تسجيل: كتابة رقم الفاتورة يضيف المتدرب للدورة تلقائيًا (بعد اختيار الدورة وتاريخ بدايتها)
+        $autoAccepted = false;
+        if (filled($data['invoice_no'] ?? null) && in_array($data['status'], Registration::OPEN_STATUSES, true)) {
+            $data['status'] = 'accepted';
+            $autoAccepted = true;
+        }
+        if (in_array($data['status'], Registration::SEAT_STATUSES, true)) {
+            $target = ($data['program_id'] ?? $registration->program_id) ? Program::find($data['program_id'] ?? $registration->program_id) : null;
+            if (! $target) {
+                return back()->withInput()->withErrors(['program_id' => 'اختر الدورة أولًا حتى يُضاف المتدرب إليها.']);
+            }
+            if (! $target->start_date) {
+                return back()->withInput()->withErrors(['program_id' => 'حدّد تاريخ بداية دورة «'.$target->title.'» من بيانات الدورة أولًا، ثم اعتمد الفاتورة.']);
+            }
+        }
+
         $becomesSeat = in_array($data['status'], Registration::SEAT_STATUSES, true)
             && ! in_array($registration->status, Registration::SEAT_STATUSES, true);
         $programId = $data['program_id'] ?? $registration->program_id;
@@ -97,7 +113,9 @@ class RegistrationController extends Controller
 
         $registration->update($data);
 
-        $msg = 'تم حفظ المتابعة.';
+        $msg = $autoAccepted
+            ? 'تم اعتماد الفاتورة وإضافة '.$registration->name.' لدورة «'.$program?->title.'» التي تبدأ '.$program?->start_date?->format('Y-m-d').'.'
+            : 'تم حفظ المتابعة.';
         if ($becomesSeat && $program && $program->closeIfFull()) {
             $msg .= ' اكتملت مقاعد «'.$program->title.'» فأُغلق التسجيل فيها تلقائيًا.';
         }
@@ -161,6 +179,12 @@ class RegistrationController extends Controller
 
     /** الجوال بصيغة 05XXXXXXXX إن أمكن */
     protected function normalizePhone(string $phone): string
+    {
+        return Registration::normalizePhone($phone);
+    }
+
+    /** @deprecated بقيت للتوافق */
+    protected function normalizePhoneLegacy(string $phone): string
     {
         $digits = preg_replace('/\D/', '', strtr($phone, ['٠' => '0', '١' => '1', '٢' => '2', '٣' => '3', '٤' => '4', '٥' => '5', '٦' => '6', '٧' => '7', '٨' => '8', '٩' => '9']));
         if (str_starts_with($digits, '9665')) {

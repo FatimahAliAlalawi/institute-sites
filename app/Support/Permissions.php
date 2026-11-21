@@ -29,7 +29,7 @@ class Permissions
             'marketing' => 'كوبونات الخصم وشريط الإعلان',
         ],
         'الإدارة' => [
-            'approvals' => 'اعتماد الخطة التدريبية والإعلانات',
+            'approvals' => 'اعتماد الخطة التدريبية والإعلانات ومتابعة الفريق',
             'pages' => 'الصفحات والقوائم والصفحة الرئيسية',
             'settings' => 'إعدادات الموقع',
             'forms' => 'النماذج والحقول',
@@ -41,7 +41,7 @@ class Permissions
     /** بادئات أسماء المسارات لكل صلاحية */
     public const ROUTES = [
         'programs' => ['admin.programs.'],
-        'approvals' => ['admin.approvals.'],
+        'approvals' => ['admin.approvals.', 'admin.team.'],
         'posts' => ['admin.posts.'],
         'partners' => ['admin.partners.'],
         'faqs' => ['admin.faqs.'],

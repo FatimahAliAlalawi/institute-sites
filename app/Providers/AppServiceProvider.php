@@ -50,6 +50,11 @@ class AppServiceProvider extends ServiceProvider
                     report($e);
                 }
                 try {
+                    \App\Support\RegistrationImporter::autoRun();
+                } catch (\Throwable $e) {
+                    report($e);
+                }
+                try {
                     \App\Support\AutoReminders::autoRun();
                 } catch (\Throwable $e) {
                     report($e);

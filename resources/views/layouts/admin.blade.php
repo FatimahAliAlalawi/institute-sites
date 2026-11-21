@@ -19,6 +19,8 @@
         ['admin.home.edit', 'fa-solid fa-house', 'الصفحة الرئيسية', 'admin.home.*'],
         ['admin.pages.index', 'fa-regular fa-file-lines', 'الصفحات', 'admin.pages.*'],
         ['admin.menus.index', 'fa-solid fa-bars-staggered', 'القوائم', 'admin.menus.*'],
+        ['admin.my-tasks', 'fa-solid fa-list-check', 'مهامي', 'admin.my-tasks', $badges['tasks'] ?? 0],
+        ['admin.team.index', 'fa-solid fa-people-group', 'متابعة الفريق', 'admin.team.*'],
         ['admin.programs.index', 'fa-solid fa-graduation-cap', 'البرامج التدريبية', 'admin.programs.*'],
         ['admin.course-attendance.index', 'fa-solid fa-clipboard-check', 'تحضير الدورات الحضورية', 'admin.course-attendance.*'],
         ['admin.approvals.index', 'fa-solid fa-stamp', 'اعتماد الخطة والإعلانات', 'admin.approvals.*', $badges['approvals'] ?? 0],

@@ -31,6 +31,13 @@ class AdminAuthenticate
             'registrations' => $admin->allows('registrations') ? Registration::where(fn ($q) => $q->where('status', 'new')->orWhere(fn ($d) => $d->dueFollowUp()))->count() : 0,
             'messages' => $admin->allows('messages') ? Message::where('is_read', false)->count() : 0,
             'enrollments' => $admin->allows('enrollments') ? Enrollment::where('status', 'pending')->count() : 0,
+            'tasks' => (function () use ($admin) {
+                try {
+                    return \App\Support\TaskBoard::forAdmin($admin)->filter(fn ($t) => ! $t['done'] && ($t['overdue'] || $t['today']))->count();
+                } catch (\Throwable $e) {
+                    return 0;
+                }
+            })(),
             'approvals' => $admin->allows('approvals') ? Program::where('plan_status', 'pending')->orWhere('ad_status', 'pending')->count() : 0,
         ]);
 
