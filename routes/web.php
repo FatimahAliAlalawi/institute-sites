@@ -103,6 +103,8 @@ Route::middleware('installed')->group(function () {
             Route::get('approvals', [Admin\ApprovalController::class, 'index'])->name('approvals.index');
             Route::get('my-tasks', [Admin\TaskController::class, 'mine'])->name('my-tasks');
             Route::get('team', [Admin\TaskController::class, 'team'])->name('team.index');
+            Route::get('reports', [Admin\ReportController::class, 'index'])->name('reports.index');
+            Route::get('reports/export', [Admin\ReportController::class, 'export'])->name('reports.export');
             Route::post('approvals/{program}', [Admin\ApprovalController::class, 'decide'])->name('approvals.decide');
             Route::resource('posts', Admin\PostController::class)->except('show');
             Route::resource('partners', Admin\PartnerController::class)->except('show');
