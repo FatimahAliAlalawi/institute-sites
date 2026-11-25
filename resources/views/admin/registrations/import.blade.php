@@ -22,6 +22,40 @@
         </div>
     @endif
 
+    @if ($merge && ($merge['pairs']->isNotEmpty() || $merge['review']->isNotEmpty()))
+        <div class="card">
+            <h2><i class="fa-solid fa-code-merge"></i> طلبات مكررة من السحب</h2>
+            <p class="sub" style="margin-top:0">شخص له طلب «تسجيل عام» وطلب أحدث لدورة. الدمج يُبقي الطلب القديم بتاريخه وملاحظاته ومتابعته وينقله للدورة، ويحذف الطلب الأحدث.</p>
+            <div class="stats">
+                <div class="stat"><b>{{ $merge['pairs']->count() }}</b><span>جاهز للدمج</span></div>
+                <div class="stat"><b>{{ $merge['review']->count() }}</b><span>يحتاج مراجعة يدوية (لن يُدمج)</span></div>
+            </div>
+            @if ($merge['pairs']->isNotEmpty())
+                <div class="table-wrap"><table>
+                    <tr><th>الدورة</th><th>عدد الطلبات</th></tr>
+                    @foreach ($merge['pairs']->groupBy(fn ($p) => $p['drop']->program?->title ?? '—') as $title => $list)
+                        <tr><td>{{ $title }}</td><td>{{ $list->count() }}</td></tr>
+                    @endforeach
+                </table></div>
+                <form method="post" action="{{ route('admin.registrations.import.merge') }}" data-confirm="دمج {{ $merge['pairs']->count() }} طلب مكرر؟ الطلبات الأحدث ستُحذف.">
+                    @csrf
+                    <label class="checks" style="display:block;margin:10px 0"><input type="checkbox" name="backup" value="1" required> أخذت نسخة احتياطية من قاعدة البيانات</label>
+                    <button class="btn btn-primary"><i class="fa-solid fa-code-merge"></i> دمج الطلبات المكررة</button>
+                </form>
+            @endif
+            @if ($merge['review']->isNotEmpty())
+                <details style="margin-top:12px"><summary>الطلبات التي تحتاج مراجعة</summary>
+                    <div class="table-wrap"><table>
+                        <tr><th>العام</th><th>الأحدث</th><th>السبب</th></tr>
+                        @foreach ($merge['review'] as $p)
+                            <tr><td><a href="{{ route('admin.registrations.show', $p['keep']) }}">{{ $p['keep']->name }}</a></td><td><a href="{{ route('admin.registrations.show', $p['drop']) }}">{{ $p['drop']->name }}</a> <span class="sub">{{ $p['drop']->program?->title }}</span></td><td>{{ $p['reason'] }}</td></tr>
+                        @endforeach
+                    </table></div>
+                </details>
+            @endif
+        </div>
+    @endif
+
     <div class="cols">
         <form class="card" method="post" action="{{ route('admin.registrations.import.link') }}">
             @csrf
@@ -107,7 +141,7 @@
                     <div class="hint">القبول في الدورة يكون باعتماد الفاتورة من صفحة المتقدم، وليس من الاستيراد.</div>
                 </div>
             </div>
-            <p class="sub">المتقدم المكرر (نفس الجوال ونفس الدورة) لا يتكرر: تُكمَّل بياناته الناقصة فقط. عمود «الحالة» اختياري، وإذا ربطته تتحدث الحالة مع كل سحب (ما عدا المقبولين).</p>
+            <p class="sub">المتقدم المكرر (نفس الجوال ونفس الدورة) لا يتكرر: تُكمَّل بياناته الناقصة فقط، وإذا أضفت دورته لاحقًا ينتقل طلبه العام إليها. وإذا احتمل اسم الدورة أكثر من دورة يبقى الطلب عامًا. عمود «الحالة» اختياري، وإذا ربطته تتحدث الحالة مع كل سحب (ما عدا المقبولين).</p>
             <div class="form-foot"><button class="btn btn-primary" type="submit"><i class="fa-regular fa-floppy-disk"></i> {{ $fileToken ? 'حفظ واستيراد الملف' : 'حفظ ربط الأعمدة' }}</button></div>
         @endif
     </form>

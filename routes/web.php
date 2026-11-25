@@ -131,6 +131,7 @@ Route::middleware('installed')->group(function () {
             Route::post('registrations/import/link', [Admin\RegistrationImportController::class, 'link'])->name('registrations.import.link');
             Route::post('registrations/import/map', [Admin\RegistrationImportController::class, 'map'])->name('registrations.import.map');
             Route::post('registrations/import/sync', [Admin\RegistrationImportController::class, 'sync'])->name('registrations.import.sync');
+            Route::post('registrations/import/merge', [Admin\RegistrationImportController::class, 'merge'])->name('registrations.import.merge');
             Route::post('registrations/import/upload', [Admin\RegistrationImportController::class, 'upload'])->name('registrations.import.upload');
             Route::resource('registrations', Admin\RegistrationController::class)->only(['index', 'create', 'store', 'show', 'update', 'destroy']);
             Route::resource('messages', Admin\MessageController::class)->only(['index', 'show', 'destroy']);

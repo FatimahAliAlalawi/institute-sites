@@ -93,10 +93,9 @@ class RegistrationImporter
 
             $programId = $defaultProgram;
             if (($p = $get('program')) !== '') {
-                $match = $programs->first(fn ($x) => $x->title === $p)
-                    ?? $programs->first(fn ($x) => str_contains($p, $x->title) || str_contains($x->title, $p));
-                $programId = $match?->id ?? $defaultProgram;
+                $programId = static::matchProgram($programs, $p)?->id ?? $defaultProgram;
             }
+            $key = mb_substr($p !== '' ? $p : '-', 0, 190);
 
             $status = $defaultStatus;
             if (($s = $get('status')) !== '') {
@@ -108,11 +107,14 @@ class RegistrationImporter
                 }
             }
 
-            $existing = Registration::where('phone', $phone)
-                ->where(fn ($q) => $programId ? $q->where('program_id', $programId) : $q->whereNull('program_id'))
-                ->first();
+            $existing = static::findExisting($phone, $key, $programId, $programs);
 
             if ($existing) {
+                // طلب عام صار لدورته صفحة: يُنقل الطلب نفسه بدل إنشاء طلب مكرر
+                if (! $existing->program_id && $programId && ! in_array($existing->status, Registration::SEAT_STATUSES, true)) {
+                    $existing->program_id = $programId;
+                }
+                $existing->import_key ??= $key;
                 // تحديث البيانات الناقصة فقط، والحالة لا تُغيَّر إلا إذا كان في الملف عمود حالة
                 $changes = array_filter([
                     'email' => $existing->email ?: ($get('email') ?: null),
@@ -139,11 +141,52 @@ class RegistrationImporter
                 'notes' => $get('notes') ?: null,
                 'status' => in_array($status, Registration::SEAT_STATUSES, true) ? 'new' : $status,
                 'source' => $source,
+                'import_key' => $key,
                 'follow_up_at' => in_array($status, Registration::OPEN_STATUSES, true) ? now()->toDateString() : null,
             ]);
             $added++;
         }
 
         return ['added' => $added, 'updated' => $updated, 'skipped' => $skipped, 'total' => count($rows)];
+    }
+
+    /** الدورة المطابقة للنص: بالاسم نفسه، أو بجزء منه إذا لم يحتمل أكثر من دورة */
+    protected static function matchProgram($programs, string $p)
+    {
+        if ($exact = $programs->first(fn ($x) => $x->title === $p)) {
+            return $exact;
+        }
+        // النص يحتوي اسم الدورة: الأطول أدق
+        $inside = $programs->filter(fn ($x) => str_contains($p, $x->title))->sortByDesc(fn ($x) => mb_strlen($x->title));
+        if ($inside->isNotEmpty()) {
+            return $inside->first();
+        }
+        // اسم الدورة يحتوي النص: «القدرات» مثلًا لها قسمان، فيبقى الطلب عامًا حتى يوزعه الموظف
+        $wider = $programs->filter(fn ($x) => str_contains($x->title, $p));
+
+        return $wider->unique('title')->count() === 1 ? $wider->first() : null;
+    }
+
+    /** الطلب السابق لنفس صف النموذج، حتى لو نُقل لدورة أخرى */
+    protected static function findExisting(string $phone, string $key, ?int $programId, $programs): ?Registration
+    {
+        $all = Registration::where('phone', $phone)->orderBy('id')->get();
+        if ($found = $all->first(fn ($r) => $r->import_key === $key)) {
+            return $found;
+        }
+        if ($found = $all->first(fn ($r) => $r->program_id === $programId)) {
+            return $found;
+        }
+        // طلبات منقولة قبل حفظ نص الدورة
+        $old = $all->filter(fn ($r) => $r->import_key === null && in_array($r->source, RegistrationMerger::SOURCES, true));
+        if ($found = $old->first(fn ($r) => $r->program_id === null)) {
+            return $found;
+        }
+
+        return $old->first(function ($r) use ($key, $programs) {
+            $title = (string) $programs->firstWhere('id', $r->program_id)?->title;
+
+            return $title !== '' && (str_contains($title, $key) || str_contains($key, $title));
+        });
     }
 }

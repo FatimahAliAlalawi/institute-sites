@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Admin;
 use App\Models\Program;
 use App\Models\Registration;
 use App\Models\Setting;
 use App\Support\RegistrationImporter;
+use App\Support\RegistrationMerger;
 use App\Support\SheetReader;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
@@ -22,6 +24,7 @@ class RegistrationImportController extends Controller
         $headers = $pending['rows'][0] ?? (json_decode((string) setting('import_headers', '[]'), true) ?: []);
 
         return view('admin.registrations.import', [
+            'merge' => $this->canMerge($request) ? RegistrationMerger::scan() : null,
             'headers' => $headers,
             'map' => RegistrationImporter::map(),
             'pending' => $pending,
@@ -116,6 +119,27 @@ class RegistrationImportController extends Controller
 
         return redirect()->route('admin.registrations.import', ['file' => $token])
             ->with('status', 'قرأنا '.(count($rows) - 1).' صف من «'.$name.'». اربط الأعمدة ثم اضغط «حفظ واستيراد الملف».');
+    }
+
+    /** دمج الطلبات المكررة (للإدارة فقط، بعد تأكيد النسخة الاحتياطية) */
+    public function merge(Request $request)
+    {
+        abort_unless($this->canMerge($request), 403);
+        $request->validate(['backup' => 'accepted'], ['backup.*' => 'خذ نسخة من قاعدة البيانات أولًا ثم علّم على المربع.', 'backup' => 'خذ نسخة من قاعدة البيانات أولًا ثم علّم على المربع.']);
+        try {
+            $n = RegistrationMerger::run();
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->withErrors(['backup' => 'لم يُدمج شيء، حاول مرة أخرى. إذا تكرر الخطأ أبلغ الدعم الفني.']);
+        }
+
+        return redirect()->route('admin.registrations.import')->with('status', 'تم دمج '.$n.' طلب مكرر.');
+    }
+
+    protected function canMerge(Request $request): bool
+    {
+        return (bool) Admin::with('role')->find($request->session()->get('admin_id'))?->allows('approvals');
     }
 
     protected function runImport(array $rows, string $source, string $name)
