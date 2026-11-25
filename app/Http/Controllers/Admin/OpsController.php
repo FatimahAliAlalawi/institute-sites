@@ -87,6 +87,9 @@ class OpsController extends Controller
     {
         $type = $request->validate(['type' => ['required', Rule::in(array_keys(TraineeMessages::TYPES))]])['type'];
 
+        if (! TraineeMessages::available($type, $program)) {
+            return back()->withErrors(['type' => 'الاختبار مغلق. افتحه أولًا من «الاختبار القبلي والبعدي» ثم أرسل الرابط.']);
+        }
         if (! MailSettings::configured()) {
             return back()->withErrors(['type' => 'إعدادات البريد غير مكتملة: الإعدادات ← البريد الإلكتروني.']);
         }

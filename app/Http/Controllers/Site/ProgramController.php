@@ -37,7 +37,8 @@ class ProgramController extends Controller
         }
         $end = $start->copy()->addMonths(3);
 
-        $programs = Program::active()->inPlan()->withCount('seatRegistrations')
+        $notCancelled = fn ($q) => $q->whereNull('plan_exec')->orWhere('plan_exec', '!=', 'cancelled');
+        $programs = Program::active()->inPlan()->where($notCancelled)->withCount('seatRegistrations')
             ->whereNotNull('start_date')
             ->where('start_date', '>=', $start->toDateString())
             ->where('start_date', '<', $end->toDateString())
@@ -53,7 +54,7 @@ class ProgramController extends Controller
             ];
         }
 
-        $upcoming = Program::active()->inPlan()->withCount('seatRegistrations')->whereNull('start_date')->ordered()->get();
+        $upcoming = Program::active()->inPlan()->where($notCancelled)->withCount('seatRegistrations')->whereNull('start_date')->ordered()->get();
 
         return view('site.programs.plan', [
             'months' => $months,

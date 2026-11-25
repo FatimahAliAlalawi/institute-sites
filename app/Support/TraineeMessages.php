@@ -21,6 +21,8 @@ class TraineeMessages
         'reminder_1d' => ['التذكير قبل الدورة بيوم', 'تذكير: {الدورة} تبدأ غدًا'],
         'reminder_am' => ['تذكير صباح الدورة', 'اليوم أول أيام {الدورة}'],
         'attendance' => ['تقرير الحضور', 'تقرير حضورك في {الدورة}'],
+        'pre_test' => ['رابط الاختبار القبلي', 'الاختبار القبلي: {الدورة}'],
+        'post_test' => ['رابط الاختبار البعدي', 'الاختبار البعدي: {الدورة}'],
         'thanks' => ['الشكر بعد الدورة', 'شكرًا لإتمامك {الدورة}'],
     ];
 
@@ -30,6 +32,8 @@ class TraineeMessages
         'reminder_1d' => "تذكير 🔔 {الاسم}\nدورتك {الدورة} تبدأ غدًا {التاريخ} الساعة {الوقت}.\nالمكان: {المكان}\nفضلًا أكّد حضورك بالرد على هذه الرسالة.",
         'reminder_am' => "صباح الخير {الاسم} ☀️\nاليوم أول أيام دورة {الدورة}، الوقت {الوقت}.\nالمكان: {المكان}\nللتواصل: {رقم_المعهد}\nنشوفك على خير.",
         'attendance' => "مرحبًا {الاسم} 📋\nتقرير حضورك في دورة {الدورة} حتى اليوم:\nحضرت {أيام_الحضور} من {أيام_الدورة} أيام.\n{ملاحظة_الحضور}",
+        'pre_test' => "أهلًا {الاسم} 📝\nقبل بداية دورة {الدورة} نحتاج تجيب على اختبار قصير لمعرفة مستواك الحالي (ليس فيه نجاح أو رسوب):\n{رابط_الاختبار_القبلي}\nالرابط خاص فيك والإرسال مرة واحدة.",
+        'post_test' => "أهلًا {الاسم} 📝\nوصلنا لنهاية دورة {الدورة}. أجب على الاختبار البعدي لتشوف مقدار تقدّمك:\n{رابط_الاختبار_البعدي}\nالرابط خاص فيك والإرسال مرة واحدة.",
         'thanks' => "شكرًا {الاسم} على إتمام دورة {الدورة} 🎓\nرأيك يهمنا، ودوراتنا القادمة هنا: {رابط_الخطة}\nللتواصل: {رقم_المعهد}",
     ];
 
@@ -46,6 +50,16 @@ class TraineeMessages
     public static function subject(string $type, Program $p): string
     {
         return str_replace('{الدورة}', $p->title, self::TYPES[$type][1] ?? $p->title);
+    }
+
+    /** رسالة الاختبار تُرسل فقط والاختبار مفتوح؛ باقي الرسائل متاحة دائمًا */
+    public static function available(string $type, Program $p): bool
+    {
+        return match ($type) {
+            'pre_test' => $p->testOpen('pre'),
+            'post_test' => $p->testOpen('post'),
+            default => true,
+        };
     }
 
     public static function vars(Registration $r, Program $p): array
@@ -68,6 +82,8 @@ class TraineeMessages
             '{المعهد}' => setting('site_name', config('app.name')),
             '{رابط_الخطة}' => route('programs.plan'),
             '{رابط_التقويم}' => ($p->session_dates || $p->start_date) ? route('programs.ics', $p) : '—',
+            '{رابط_الاختبار_القبلي}' => route('program-test', [$r->ensureTestToken(), 'pre']),
+            '{رابط_الاختبار_البعدي}' => route('program-test', [$r->ensureTestToken(), 'post']),
             '{أيام_الحضور}' => (string) $att['attended'],
             '{أيام_الدورة}' => (string) $att['days'],
             '{أيام_الغياب}' => (string) $att['missed'],

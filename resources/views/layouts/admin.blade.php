@@ -25,6 +25,7 @@
         ['admin.programs.index', 'fa-solid fa-graduation-cap', 'البرامج التدريبية', 'admin.programs.*'],
         ['admin.course-attendance.index', 'fa-solid fa-clipboard-check', 'تحضير الدورات الحضورية', 'admin.course-attendance.*'],
         ['admin.approvals.index', 'fa-solid fa-stamp', 'اعتماد الخطة والإعلانات', 'admin.approvals.*', $badges['approvals'] ?? 0],
+        ['admin.plan-follow.index', 'fa-solid fa-calendar-check', 'متابعة الخطة', 'admin.plan-follow.*'],
         ['admin.posts.index', 'fa-regular fa-newspaper', 'الأخبار', 'admin.posts.*'],
         ['admin.partners.index', 'fa-regular fa-handshake', 'الشركاء', 'admin.partners.*'],
         ['admin.faqs.index', 'fa-regular fa-circle-question', 'الأسئلة الشائعة', 'admin.faqs.*'],

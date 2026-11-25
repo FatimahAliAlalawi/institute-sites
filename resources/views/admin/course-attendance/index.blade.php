@@ -64,6 +64,7 @@
                             <td>
                                 <div class="actions">
                                     <a href="{{ route('admin.course-attendance.show', $p) }}" class="btn btn-sm btn-primary"><i class="fa-solid fa-clipboard-check"></i> تحضير</a>
+                                    <a href="{{ route('admin.course-attendance.tests', $p) }}" class="btn btn-sm"><i class="fa-solid fa-file-pen"></i> الاختبارات</a>
                                     <a href="{{ route('admin.course-attendance.ics', ['program' => $p->id]) }}" class="btn btn-sm" title="أضف للتقويم"><i class="fa-regular fa-calendar-plus"></i></a>
                                 </div>
                             </td>

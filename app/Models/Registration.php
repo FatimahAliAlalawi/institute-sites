@@ -69,6 +69,16 @@ class Registration extends Model
         return $digits ?: trim($phone);
     }
 
+    /** رمز سري لرابط اختبار المتدرب (يُنشأ عند أول حاجة) */
+    public function ensureTestToken(): string
+    {
+        if (! $this->test_token) {
+            $this->forceFill(['test_token' => \Illuminate\Support\Str::random(40)])->save();
+        }
+
+        return $this->test_token;
+    }
+
     public function program()
     {
         return $this->belongsTo(Program::class);

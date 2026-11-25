@@ -35,6 +35,12 @@ class ApprovalController extends Controller
         $program->{$kind.'_status'} = $data['decision'];
         $program->{$kind.'_approved_by'} = $data['decision'] === 'approved' ? ($admin?->name ?: $admin?->username) : null;
         $program->{$kind.'_approved_at'} = $data['decision'] === 'approved' ? now() : null;
+        // الموعد المخطط: يُثبّت عند أول اعتماد، ويُمسح إذا أُخرجت الدورة من الخطة
+        if ($kind === 'plan' && $data['decision'] === 'approved') {
+            $program->plan_baseline_date ??= $program->start_date;
+        } elseif ($kind === 'plan' && $data['decision'] === 'none') {
+            $program->fill(['plan_baseline_date' => null, 'plan_exec' => null, 'plan_exec_note' => null]);
+        }
         if ($request->filled('note') || $data['decision'] === 'rejected') {
             $program->approval_note = $data['note'] ?? null;
         }

@@ -48,7 +48,10 @@ class Program extends Model
     public const TRAINEE_STEPS = ['invoice', 'invoice_sent', 'welcome', 'reminder_1d', 'reminder_am', 'tvtc'];
 
     /** رسائل بعد بدء الدورة تُتابع في نفس الجدول */
-    public const AFTER_STEPS = ['attendance' => 'تقرير الحضور', 'thanks' => 'الشكر بعد الدورة'];
+    public const AFTER_STEPS = ['pre_test' => 'الاختبار القبلي', 'attendance' => 'تقرير الحضور', 'post_test' => 'الاختبار البعدي', 'thanks' => 'الشكر بعد الدورة'];
+
+    /** حالة تنفيذ تُحدد يدويًا في «متابعة الخطة» (الفارغ = حسب الموعد) */
+    public const PLAN_EXEC = ['postponed' => 'مؤجلة', 'cancelled' => 'ملغاة'];
 
     /** الحقول التي يظهر فيها الإعلان؛ تعديل أيٍّ منها يعيد الإعلان لانتظار الاعتماد */
     public const AD_FIELDS = ['title', 'accreditation_no', 'duration', 'schedule_days', 'schedule_time', 'trainer_name', 'hours', 'price', 'sale_price', 'offer_ends_at', 'start_date', 'contact_phone', 'mode', 'location'];
@@ -63,6 +66,7 @@ class Program extends Model
         'accreditation_no', 'sale_price', 'offer_ends_at', 'contact_phone',
         'plan_status', 'plan_approved_by', 'plan_approved_at', 'ad_status', 'ad_approved_by', 'ad_approved_at', 'approval_note',
         'schedule_days', 'schedule_time', 'trainer_name', 'group_link', 'ops', 'trainer_admin_id', 'sessions',
+        'pre_test_open', 'post_test_open', 'plan_baseline_date', 'plan_exec', 'plan_exec_note',
     ];
 
     /** أيام الأسبوع بترتيب الأسبوع السعودي (رقم Carbon => الاسم) */
@@ -73,6 +77,9 @@ class Program extends Model
         'offer_ends_at' => 'date',
         'ops' => 'array',
         'sessions' => 'array',
+        'plan_baseline_date' => 'date',
+        'pre_test_open' => 'boolean',
+        'post_test_open' => 'boolean',
         'plan_approved_at' => 'datetime',
         'ad_approved_at' => 'datetime',
         'price' => 'decimal:2',
@@ -142,6 +149,26 @@ class Program extends Model
         }
 
         return $out;
+    }
+
+    /** أسئلة الاختبار القبلي والبعدي */
+    public function questions()
+    {
+        return $this->hasMany(ProgramQuestion::class)->orderBy('sort')->orderBy('id');
+    }
+
+    /** هل الاختبار (pre أو post) مفتوح للمتدربين؟ */
+    public function testOpen(string $kind): bool
+    {
+        return (bool) $this->{$kind.'_test_open'} && $this->questions->isNotEmpty();
+    }
+
+    /** الحد الأدنى من المتدربين لعقد الدورة */
+    public static function minTrainees(): int
+    {
+        $v = setting('plan_min_trainees');
+
+        return is_numeric($v) ? max(1, (int) $v) : 3;
     }
 
     public function registrations()
