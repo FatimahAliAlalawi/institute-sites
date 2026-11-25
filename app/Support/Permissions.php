@@ -21,7 +21,7 @@ class Permissions
             'students' => 'الطلاب',
             'enrollments' => 'الاشتراكات والمدفوعات',
             'attendance' => 'التحضير',
-            'course_attendance' => 'تحضير الدورات الحضورية (للمدربين)',
+            'course_attendance' => 'تحضير الدورات الحضورية والاختبار القبلي والبعدي (للمدربين)',
             'lms_reports' => 'نتائج الاختبارات والشهادات والتقييمات',
         ],
         'المبيعات والتسويق' => [
@@ -29,7 +29,7 @@ class Permissions
             'marketing' => 'كوبونات الخصم وشريط الإعلان',
         ],
         'الإدارة' => [
-            'approvals' => 'اعتماد الخطة التدريبية والإعلانات ومتابعة الفريق وتقارير الأداء',
+            'approvals' => 'اعتماد الخطة التدريبية والإعلانات ومتابعة الخطة والفريق وتقارير الأداء',
             'pages' => 'الصفحات والقوائم والصفحة الرئيسية',
             'settings' => 'إعدادات الموقع',
             'forms' => 'النماذج والحقول',
@@ -41,7 +41,7 @@ class Permissions
     /** بادئات أسماء المسارات لكل صلاحية */
     public const ROUTES = [
         'programs' => ['admin.programs.'],
-        'approvals' => ['admin.approvals.', 'admin.team.', 'admin.reports.'],
+        'approvals' => ['admin.approvals.', 'admin.team.', 'admin.reports.', 'admin.plan-follow.'],
         'posts' => ['admin.posts.'],
         'partners' => ['admin.partners.'],
         'faqs' => ['admin.faqs.'],

@@ -27,6 +27,10 @@ Route::middleware('installed')->group(function () {
     Route::get('/register', [Site\RegistrationController::class, 'create'])->name('register');
     Route::post('/register', [Site\RegistrationController::class, 'store'])->middleware('throttle:forms')->name('register.store');
 
+    // الاختبار القبلي/البعدي: رابط شخصي سري لكل متدرب
+    Route::get('/t/{token}/{kind}', [Site\ProgramTestController::class, 'show'])->where('token', '[A-Za-z0-9]{40}')->whereIn('kind', ['pre', 'post'])->middleware('throttle:forms')->name('program-test');
+    Route::post('/t/{token}/{kind}', [Site\ProgramTestController::class, 'store'])->where('token', '[A-Za-z0-9]{40}')->whereIn('kind', ['pre', 'post'])->middleware('throttle:forms')->name('program-test.store');
+
     Route::get('/news', [Site\NewsController::class, 'index'])->name('news.index');
     Route::get('/news/{post:slug}', [Site\NewsController::class, 'show'])->name('news.show');
 
@@ -97,6 +101,18 @@ Route::middleware('installed')->group(function () {
             Route::get('course-attendance/calendar.ics', [Admin\CourseAttendanceController::class, 'ics'])->name('course-attendance.ics');
             Route::get('course-attendance/{program}', [Admin\CourseAttendanceController::class, 'show'])->name('course-attendance.show');
             Route::post('course-attendance/{program}', [Admin\CourseAttendanceController::class, 'store'])->name('course-attendance.store');
+            Route::prefix('course-attendance/{program}/tests')->name('course-attendance.tests')->controller(Admin\ProgramTestController::class)->group(function () {
+                Route::get('/', 'tests');
+                Route::get('export', 'exportTests')->name('.export');
+                Route::post('questions', 'saveQuestions')->name('.questions');
+                Route::post('copy', 'copyQuestions')->name('.copy');
+                Route::post('toggle', 'toggle')->name('.toggle');
+                Route::post('scores', 'scores')->name('.scores');
+                Route::delete('results/{result}', 'reset')->name('.reset');
+            });
+            Route::get('plan-follow', [Admin\PlanFollowController::class, 'index'])->name('plan-follow.index');
+            Route::get('plan-follow/export', [Admin\PlanFollowController::class, 'export'])->name('plan-follow.export');
+            Route::post('plan-follow/{program}', [Admin\PlanFollowController::class, 'update'])->name('plan-follow.update');
             Route::get('programs/{program}/ad-card', [Admin\ProgramController::class, 'adCard'])->name('programs.ad-card');
             Route::get('programs/{program}/qr/{type}', [Admin\ProgramController::class, 'qr'])->whereIn('type', ['page', 'wa'])->name('programs.qr');
             Route::resource('programs', Admin\ProgramController::class)->except('show');

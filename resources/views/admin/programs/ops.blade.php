@@ -4,6 +4,7 @@
 
 @section('actions')
     <a href="{{ route('admin.course-attendance.show', $program) }}" class="btn"><i class="fa-solid fa-clipboard-check"></i> التحضير</a>
+    @if ($currentAdmin->allows('course_attendance'))<a href="{{ route('admin.course-attendance.tests', $program) }}" class="btn"><i class="fa-solid fa-file-pen"></i> الاختبار القبلي والبعدي</a>@endif
     <a href="{{ route('admin.registrations.index', ['program' => $program->id]) }}" class="btn"><i class="fa-solid fa-user-plus"></i> طلبات الدورة</a>
     <a href="{{ route('admin.programs.edit', $program) }}" class="btn"><i class="fa-regular fa-pen-to-square"></i> بيانات الدورة</a>
 @endsection
@@ -125,7 +126,7 @@
                                 @foreach ($cols as $s => $label)
                                     <td style="text-align:center;white-space:nowrap">
                                         <input type="checkbox" id="cb-{{ $t->id }}-{{ $s }}" name="steps[{{ $t->id }}][{{ $s }}]" value="1" @checked($t->stepDone($s)) title="{{ $t->steps[$s]['by'] ?? '' }} {{ $t->steps[$s]['at'] ?? '' }}">
-                                        @if (isset($msgTypes[$s]))
+                                        @if (isset($msgTypes[$s]) && \App\Support\TraineeMessages::available($s, $program))
                                             <a href="{{ \App\Support\TraineeMessages::whatsappUrl($t, \App\Support\TraineeMessages::render($s, $t, $program)) }}" target="_blank" rel="noopener" class="wa-send" data-reg="{{ $t->id }}" data-type="{{ $s }}" title="إرسال «{{ $msgTypes[$s][0] }}» واتساب" style="color:#128C7E;margin-inline-start:4px"><i class="fa-brands fa-whatsapp"></i></a>
                                         @endif
                                     </td>
@@ -149,6 +150,7 @@
             <p class="sub" style="margin-top:0">يرسل الرسالة لكل متدرب عنده بريد ولم تُنفّذ له الخطوة بعد، ويؤشّرها تلقائيًا. «تقرير الحضور» يُرسل للجميع في كل مرة.</p>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
                 @foreach (\App\Support\TraineeMessages::TYPES as $type => [$label])
+                    @continue(! \App\Support\TraineeMessages::available($type, $program))
                     <form method="post" action="{{ route('admin.programs.ops.email', $program) }}" onsubmit="return confirm('إرسال «{{ $label }}» بالإيميل؟')">
                         @csrf
                         <input type="hidden" name="type" value="{{ $type }}">

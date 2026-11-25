@@ -95,6 +95,27 @@ class TaskBoard
                 }
             }
 
+            // المدرب: أسئلة الاختبار، ثم القبلي يوم البدء والبعدي في آخر يوم
+            if ($p->trainer_admin_id === $admin->id && $p->start_date && ! $p->plan_exec && $trainees->isNotEmpty()) {
+                $first = $p->session_dates ? \Illuminate\Support\Carbon::parse($p->session_dates[0]) : $p->start_date->copy();
+                $last = $p->session_dates ? \Illuminate\Support\Carbon::parse(\Illuminate\Support\Arr::last($p->session_dates)) : $first->copy();
+                $ids = $trainees->pluck('id');
+                $taken = \App\Models\ProgramTestResult::where('program_id', $p->id)->whereIn('registration_id', $ids)->get()->countBy('kind');
+                foreach ([
+                    ['test-questions', 'إضافة أسئلة الاختبار القبلي والبعدي', 'قبل الدورة بثلاثة أيام', $first->copy()->subDays(3), 1, $p->questions->isNotEmpty() ? 0 : 1],
+                    ['test-pre', 'الاختبار القبلي', 'افتحه وأرسل الروابط للمتدربين', $first, $ids->count(), $ids->count() - $taken->get('pre', 0)],
+                    ['test-post', 'الاختبار البعدي', 'في آخر يوم من الدورة', $last, $ids->count(), $ids->count() - $taken->get('post', 0)],
+                ] as [$key, $title, $detail, $due, $total, $pending]) {
+                    $tasks->push([
+                        'program' => $p, 'key' => $key, 'title' => $title, 'detail' => $detail,
+                        'kind' => $key === 'test-questions' ? 'course' : 'trainee', 'due' => $due,
+                        'total' => $total, 'pending' => $pending, 'done' => $pending === 0,
+                        'overdue' => $pending > 0 && $due->lt($today), 'today' => $pending > 0 && $due->isSameDay($today),
+                        'link' => route('admin.course-attendance.tests', $p),
+                    ]);
+                }
+            }
+
             // المدرب: تحضير أيام دورته
             if ($p->trainer_admin_id === $admin->id) {
                 $recorded = ProgramAttendance::where('program_id', $p->id)->pluck('date')->map(fn ($d) => substr((string) $d, 0, 10))->unique()->all();
