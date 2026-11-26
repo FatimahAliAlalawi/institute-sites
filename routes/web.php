@@ -28,6 +28,8 @@ Route::middleware('installed')->group(function () {
     Route::post('/register', [Site\RegistrationController::class, 'store'])->middleware('throttle:forms')->name('register.store');
 
     // الاختبار القبلي/البعدي: رابط شخصي سري لكل متدرب
+    Route::get('/complete/{token}', [Site\ProfileController::class, 'show'])->where('token', '[A-Za-z0-9]{40}')->middleware('throttle:forms')->name('profile.complete');
+    Route::post('/complete/{token}', [Site\ProfileController::class, 'store'])->where('token', '[A-Za-z0-9]{40}')->middleware('throttle:forms')->name('profile.complete.store');
     Route::get('/t/{token}/{kind}', [Site\ProgramTestController::class, 'show'])->where('token', '[A-Za-z0-9]{40}')->whereIn('kind', ['pre', 'post'])->middleware('throttle:forms')->name('program-test');
     Route::post('/t/{token}/{kind}', [Site\ProgramTestController::class, 'store'])->where('token', '[A-Za-z0-9]{40}')->whereIn('kind', ['pre', 'post'])->middleware('throttle:forms')->name('program-test.store');
 

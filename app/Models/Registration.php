@@ -40,9 +40,16 @@ class Registration extends Model
         'program_id', 'name', 'phone', 'email', 'city', 'gender', 'qualification',
         'employment_status', 'notes', 'status', 'admin_notes', 'ip', 'extra',
         'source', 'follow_up_at', 'invoice_no', 'attendance', 'coupon_code', 'steps', 'import_key',
+        'national_id', 'birth_date', 'profile_done_at',
     ];
 
-    protected $casts = ['extra' => 'array', 'follow_up_at' => 'date', 'steps' => 'array'];
+    protected $casts = ['extra' => 'array', 'follow_up_at' => 'date', 'steps' => 'array', 'birth_date' => 'date', 'profile_done_at' => 'datetime'];
+
+    /** رابط إكمال البيانات بعد الدفع */
+    public function profileUrl(): string
+    {
+        return route('profile.complete', $this->ensureTestToken());
+    }
 
     /** هل نُفّذت خطوة من خطوات آلية التسجيل لهذا المتدرب؟ */
     public function stepDone(string $step): bool

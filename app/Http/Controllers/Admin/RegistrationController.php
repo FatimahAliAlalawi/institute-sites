@@ -113,9 +113,17 @@ class RegistrationController extends Controller
 
         $registration->update($data);
 
+        // بعد الدفع: رابط إكمال البيانات بالإيميل تلقائيًا
+        $profileSent = $becomesSeat && \App\Support\ProfileRequests::send($registration->fresh('program'));
+
         $msg = $autoAccepted
-            ? 'تم اعتماد الفاتورة وإضافة '.$registration->name.' لدورة «'.$program?->title.'» التي تبدأ '.$program?->start_date?->format('Y-m-d').'.'
+            ? 'تم اعتماد الفاتورة وإضافة '.($registration->name ?: 'المتقدم').' لدورة «'.$program?->title.'» التي تبدأ '.$program?->start_date?->format('Y-m-d').'.'
             : 'تم حفظ المتابعة.';
+        if ($profileSent) {
+            $msg .= ' أُرسل له رابط إكمال البيانات بالإيميل.';
+        } elseif ($becomesSeat && ! $registration->profile_done_at) {
+            $msg .= ' أرسل له رابط إكمال البيانات واتساب من صفحة الطلب.';
+        }
         if ($becomesSeat && $program && $program->closeIfFull()) {
             $msg .= ' اكتملت مقاعد «'.$program->title.'» فأُغلق التسجيل فيها تلقائيًا.';
         }
@@ -141,10 +149,10 @@ class RegistrationController extends Controller
         return response()->streamDownload(function () use ($rows, $extraColumns) {
             $out = fopen('php://output', 'w');
             fwrite($out, "\xEF\xBB\xBF");
-            fputcsv($out, array_merge(['#', 'التاريخ', 'الاسم', 'الجوال', 'البريد', 'المدينة', 'الجنس', 'المؤهل', 'الحالة الوظيفية', 'البرنامج', 'الحالة', 'المصدر', 'موعد المتابعة', 'رقم الفاتورة', 'تأكيد الحضور', 'كود الخصم المرسل', 'ملاحظات المتقدم', 'ملاحظات الإدارة'], array_values($extraColumns)));
+            fputcsv($out, array_merge(['#', 'التاريخ', 'الاسم', 'الجوال', 'الهوية', 'تاريخ الميلاد', 'البريد', 'المدينة', 'الجنس', 'المؤهل', 'الحالة الوظيفية', 'البرنامج', 'الحالة', 'المصدر', 'موعد المتابعة', 'رقم الفاتورة', 'تأكيد الحضور', 'كود الخصم المرسل', 'ملاحظات المتقدم', 'ملاحظات الإدارة'], array_values($extraColumns)));
             foreach ($rows as $r) {
                 fputcsv($out, array_merge([
-                    $r->id, $r->created_at->format('Y-m-d H:i'), $r->name, $r->phone, $r->email, $r->city, $r->gender,
+                    $r->id, $r->created_at->format('Y-m-d H:i'), $r->name, $r->phone, $r->national_id, $r->birth_date?->format('Y-m-d'), $r->email, $r->city, $r->gender,
                     $r->qualification, $r->employment_status, $r->program?->title ?? 'تسجيل عام', $r->status_label,
                     $r->source, $r->follow_up_at?->format('Y-m-d'), $r->invoice_no, $r->attendance_label, $r->coupon_code,
                     $r->notes, $r->admin_notes,
@@ -165,7 +173,7 @@ class RegistrationController extends Controller
             ->when($request->filled('program'), fn ($w) => $request->input('program') === 'none'
                 ? $w->whereNull('program_id')
                 : $w->where('program_id', $request->input('program')))
-            ->when($q !== '', fn ($w) => $w->where(fn ($s) => $s->where('name', 'like', "%$q%")->orWhere('phone', 'like', "%$q%")->orWhere('email', 'like', "%$q%")));
+            ->when($q !== '', fn ($w) => $w->where(fn ($s) => $s->where('name', 'like', "%$q%")->orWhere('phone', 'like', "%$q%")->orWhere('national_id', 'like', "%$q%")->orWhere('email', 'like', "%$q%")));
     }
 
     protected function defaultFollowUp(string $status): ?string

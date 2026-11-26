@@ -11,7 +11,24 @@
         <div class="card">
             <h2>بيانات المتقدم</h2>
             <dl class="info">
-                <dt>الاسم</dt><dd>{{ $registration->name }}</dd>
+                <dt>الاسم</dt><dd>{{ $registration->name ?: '—' }}</dd>
+                <dt>رقم الهوية</dt><dd dir="ltr" style="text-align:right">{{ $registration->national_id ?: '—' }}</dd>
+                <dt>تاريخ الميلاد</dt><dd>{{ $registration->birth_date?->format('Y-m-d') ?: '—' }}</dd>
+                @if (in_array($registration->status, \App\Models\Registration::SEAT_STATUSES, true))
+                    <dt>إكمال البيانات</dt>
+                    <dd>
+                        @if ($registration->profile_done_at)
+                            <span class="badge b-on">مكتملة {{ $registration->profile_done_at->format('Y-m-d') }}</span>
+                        @else
+                            <span class="badge b-new">ناقصة</span>
+                            @if ($registration->stepDone('profile'))<span class="sub">أُرسل الرابط {{ $registration->steps['profile']['at'] ?? '' }}</span>@endif
+                        @endif
+                        @if ($registration->program)
+                            <a href="{{ \App\Support\TraineeMessages::whatsappUrl($registration, \App\Support\TraineeMessages::render('profile', $registration, $registration->program)) }}" target="_blank" rel="noopener" class="btn btn-sm"><i class="fa-brands fa-whatsapp"></i> إرسال الرابط</a>
+                        @endif
+                        <div class="sub" dir="ltr" style="text-align:right;word-break:break-all">{{ $registration->profileUrl() }}</div>
+                    </dd>
+                @endif
                 <dt>الجوال</dt><dd dir="ltr" style="text-align:right"><a href="tel:{{ $registration->phone }}">{{ $registration->phone }}</a></dd>
                 <dt>البريد الإلكتروني</dt><dd>{{ $registration->email ?: '—' }}</dd>
                 <dt>المدينة</dt><dd>{{ $registration->city ?: '—' }}</dd>

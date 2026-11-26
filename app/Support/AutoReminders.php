@@ -43,7 +43,7 @@ class AutoReminders
             $jobs['reminder_am'] = $now->toDateString();
         }
 
-        $sent = 0;
+        $sent = ProfileRequests::sweep();
         foreach ($jobs as $type => $date) {
             $programs = Program::whereDate('start_date', $date)->get();
             foreach ($programs as $program) {
