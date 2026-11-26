@@ -110,6 +110,12 @@ Route::middleware('installed')->group(function () {
                 Route::post('scores', 'scores')->name('.scores');
                 Route::delete('results/{result}', 'reset')->name('.reset');
             });
+            Route::prefix('course-attendance/{program}/files')->name('course-attendance.files')->controller(Admin\ProgramReportController::class)->group(function () {
+                Route::get('/', 'files');
+                Route::post('/', 'upload')->name('.store');
+                Route::get('{report}', 'download')->name('.download');
+                Route::delete('{report}', 'destroy')->name('.destroy');
+            });
             Route::get('plan-follow', [Admin\PlanFollowController::class, 'index'])->name('plan-follow.index');
             Route::get('plan-follow/export', [Admin\PlanFollowController::class, 'export'])->name('plan-follow.export');
             Route::post('plan-follow/{program}', [Admin\PlanFollowController::class, 'update'])->name('plan-follow.update');

@@ -8,6 +8,7 @@
         <a href="{{ route('admin.programs.ops', $program) }}" class="btn"><i class="fa-solid fa-list-check"></i> تشغيل الدورة</a>
     @endif
     <a href="{{ route('admin.course-attendance.tests.export', $program) }}" class="btn"><i class="fa-solid fa-file-excel"></i> تصدير Excel</a>
+    <a href="{{ route('admin.course-attendance.files', [$program, 'kind' => 'pre_report']) }}" class="btn"><i class="fa-solid fa-folder-open"></i> رفع تقرير الاختبار</a>
 @endsection
 
 @php
