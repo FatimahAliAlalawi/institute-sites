@@ -6,6 +6,7 @@
     <a href="{{ route('admin.course-attendance.index') }}" class="btn"><i class="fa-regular fa-calendar"></i> التقويم</a>
     <a href="{{ route('admin.course-attendance.ics', ['program' => $program->id]) }}" class="btn"><i class="fa-regular fa-calendar-plus"></i> أضف للتقويم</a>
     <a href="{{ route('admin.course-attendance.tests', $program) }}" class="btn"><i class="fa-solid fa-file-pen"></i> الاختبار القبلي والبعدي</a>
+    <a href="{{ route('admin.course-attendance.files', $program) }}" class="btn"><i class="fa-solid fa-folder-open"></i> الخطط والتقارير</a>
     @if (isset($currentAdmin) && $currentAdmin->allows('programs'))
         <a href="{{ route('admin.programs.ops', $program) }}" class="btn"><i class="fa-solid fa-list-check"></i> تشغيل الدورة</a>
     @endif

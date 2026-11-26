@@ -11,3 +11,8 @@ Artisan::command('inspire', function () {
 Artisan::command('trainees:remind', function () {
     $this->info('أُرسلت '.\App\Support\AutoReminders::run().' رسالة تذكير.');
 })->purpose('إرسال تذكيرات الدورات الحضورية بالإيميل');
+
+// تذكير المدربين بمهام اليوم (التحضير والخطط والتقارير والاختبارات)
+Artisan::command('trainers:remind', function () {
+    $this->info('أُرسلت '.\App\Support\TrainerReminders::run().' رسالة للمدربين.');
+})->purpose('تذكير المدربين بمهامهم بالإيميل');

@@ -152,6 +152,23 @@ class Program extends Model
     }
 
     /** أسئلة الاختبار القبلي والبعدي */
+    public function reports()
+    {
+        return $this->hasMany(ProgramReport::class)->latest('id');
+    }
+
+    /** أيام الدورة مقسّمة على الأسابيع (الأحد => أيام ذلك الأسبوع) */
+    public function sessionWeeks(): array
+    {
+        $dates = $this->session_dates ?: ($this->start_date ? [$this->start_date->toDateString()] : []);
+        $weeks = [];
+        foreach ($dates as $d) {
+            $weeks[\Illuminate\Support\Carbon::parse($d)->startOfWeek(\Illuminate\Support\Carbon::SUNDAY)->toDateString()][] = $d;
+        }
+
+        return $weeks;
+    }
+
     public function questions()
     {
         return $this->hasMany(ProgramQuestion::class)->orderBy('sort')->orderBy('id');

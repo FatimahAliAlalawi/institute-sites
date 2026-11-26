@@ -110,6 +110,12 @@ Route::middleware('installed')->group(function () {
                 Route::post('scores', 'scores')->name('.scores');
                 Route::delete('results/{result}', 'reset')->name('.reset');
             });
+            Route::prefix('course-attendance/{program}/files')->name('course-attendance.files')->controller(Admin\ProgramReportController::class)->group(function () {
+                Route::get('/', 'files');
+                Route::post('/', 'upload')->name('.store');
+                Route::get('{report}', 'download')->name('.download');
+                Route::delete('{report}', 'destroy')->name('.destroy');
+            });
             Route::get('plan-follow', [Admin\PlanFollowController::class, 'index'])->name('plan-follow.index');
             Route::get('plan-follow/export', [Admin\PlanFollowController::class, 'export'])->name('plan-follow.export');
             Route::post('plan-follow/{program}', [Admin\PlanFollowController::class, 'update'])->name('plan-follow.update');
@@ -131,6 +137,7 @@ Route::middleware('installed')->group(function () {
             Route::post('registrations/import/link', [Admin\RegistrationImportController::class, 'link'])->name('registrations.import.link');
             Route::post('registrations/import/map', [Admin\RegistrationImportController::class, 'map'])->name('registrations.import.map');
             Route::post('registrations/import/sync', [Admin\RegistrationImportController::class, 'sync'])->name('registrations.import.sync');
+            Route::post('registrations/import/merge', [Admin\RegistrationImportController::class, 'merge'])->name('registrations.import.merge');
             Route::post('registrations/import/upload', [Admin\RegistrationImportController::class, 'upload'])->name('registrations.import.upload');
             Route::resource('registrations', Admin\RegistrationController::class)->only(['index', 'create', 'store', 'show', 'update', 'destroy']);
             Route::resource('messages', Admin\MessageController::class)->only(['index', 'show', 'destroy']);

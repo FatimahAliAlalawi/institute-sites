@@ -59,6 +59,11 @@ class AppServiceProvider extends ServiceProvider
                 } catch (\Throwable $e) {
                     report($e);
                 }
+                try {
+                    \App\Support\TrainerReminders::autoRun();
+                } catch (\Throwable $e) {
+                    report($e);
+                }
             });
         }
     }

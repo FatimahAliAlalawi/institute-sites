@@ -39,7 +39,7 @@ class Registration extends Model
     protected $fillable = [
         'program_id', 'name', 'phone', 'email', 'city', 'gender', 'qualification',
         'employment_status', 'notes', 'status', 'admin_notes', 'ip', 'extra',
-        'source', 'follow_up_at', 'invoice_no', 'attendance', 'coupon_code', 'steps',
+        'source', 'follow_up_at', 'invoice_no', 'attendance', 'coupon_code', 'steps', 'import_key',
     ];
 
     protected $casts = ['extra' => 'array', 'follow_up_at' => 'date', 'steps' => 'array'];

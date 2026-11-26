@@ -116,6 +116,13 @@ class TaskBoard
                 }
             }
 
+            // المدرب: الخطة والتقرير لكل أسبوع، وتقرير الاختبار القبلي والبعدي
+            if ($p->trainer_admin_id === $admin->id && ! $p->plan_exec) {
+                foreach (static::fileTasks($p, $today) as $t) {
+                    $tasks->push($t);
+                }
+            }
+
             // المدرب: تحضير أيام دورته
             if ($p->trainer_admin_id === $admin->id) {
                 $recorded = ProgramAttendance::where('program_id', $p->id)->pluck('date')->map(fn ($d) => substr((string) $d, 0, 10))->unique()->all();
@@ -136,6 +143,45 @@ class TaskBoard
         }
 
         return $tasks->sortBy(fn ($t) => [$t['done'] ? 1 : 0, $t['overdue'] ? 0 : 1, $t['due']?->timestamp ?? PHP_INT_MAX])->values();
+    }
+
+    /** ملفات المدرب المطلوبة للدورة: تظهر الخطة قبل أسبوعها بثلاثة أيام، والتقارير عند حلول موعدها */
+    public static function fileTasks(Program $p, \Illuminate\Support\Carbon $today): array
+    {
+        $weeks = $p->sessionWeeks();
+        if (! $weeks) {
+            return [];
+        }
+        $have = $p->reports()->get(['kind', 'week'])->map(fn ($r) => $r->kind.'|'.$r->week?->toDateString())->flip();
+        $all = array_merge(...array_values($weeks));
+        $first = \Illuminate\Support\Carbon::parse($all[0]);
+        $last = \Illuminate\Support\Carbon::parse(end($all));
+        $items = [];
+        $n = 0;
+        foreach ($weeks as $week => $days) {
+            $n++;
+            $label = count($weeks) > 1 ? ' — الأسبوع '.$n : '';
+            $items[] = ['weekly_plan', $week, 'الخطة الأسبوعية'.$label, 'ارفع خطة الأسبوع قبل بدايته', \Illuminate\Support\Carbon::parse($days[0]), -3];
+            $items[] = ['weekly_report', $week, 'التقرير الأسبوعي'.$label, 'ارفع تقرير الأسبوع بعد آخر يوم فيه', \Illuminate\Support\Carbon::parse(end($days))->addDay(), 0];
+        }
+        $items[] = ['pre_report', null, 'رفع تقرير الاختبار القبلي', 'بعد ما يؤدي المتدربون الاختبار القبلي', $first->copy()->addDay(), -1];
+        $items[] = ['post_report', null, 'رفع تقرير الاختبار البعدي', 'بعد ما يؤدي المتدربون الاختبار البعدي', $last->copy()->addDay(), -1];
+
+        $out = [];
+        foreach ($items as [$kind, $week, $title, $detail, $due, $showBefore]) {
+            if ($due->copy()->addDays($showBefore)->gt($today)) {
+                continue;
+            }
+            $done = isset($have[$kind.'|'.$week]);
+            $out[] = [
+                'program' => $p, 'key' => 'file-'.$kind.'-'.$week, 'title' => $title, 'detail' => $detail,
+                'kind' => 'course', 'due' => $due, 'total' => 1, 'pending' => $done ? 0 : 1, 'done' => $done,
+                'overdue' => ! $done && $due->lt($today), 'today' => ! $done && $due->isSameDay($today),
+                'link' => route('admin.course-attendance.files', [$p, 'kind' => $kind, 'week' => $week]),
+            ];
+        }
+
+        return $out;
     }
 
     /** للوحة الإدارة: كل موظف ومهامه */
