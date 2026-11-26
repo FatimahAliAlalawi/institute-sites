@@ -120,6 +120,7 @@
                                     <a href="{{ route('admin.registrations.show', $t) }}"><b>{{ $t->name }}</b></a>
                                     <div class="sub" dir="ltr" style="text-align:right">{{ $t->phone }} @if ($t->invoice_no)· {{ $t->invoice_no }}@endif</div>
                                     @unless ($t->email)<div class="sub" style="color:#b54708">بدون بريد</div>@endunless
+                                    @unless ($t->profile_done_at)<div class="sub" style="color:#b54708">البيانات ناقصة</div>@endunless
                                     @php($att = \App\Models\ProgramAttendance::summaryFor($t, $program))
                                     @if ($att['cert'] !== 'ok')<span class="badge {{ \App\Models\ProgramAttendance::CERT_LABELS[$att['cert']][1] }}" title="غياب {{ $att['missed'] }} من {{ $att['total'] }}">{{ \App\Models\ProgramAttendance::CERT_LABELS[$att['cert']][0] }}</span>@endif
                                 </td>

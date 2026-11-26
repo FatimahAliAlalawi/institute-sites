@@ -32,7 +32,8 @@ class RegistrationController extends Controller
             'program_id' => [Rule::exists('programs', 'id')->where('is_active', true)->where('registration_open', true)],
         ]);
 
-        $columns = ['program_id', 'name', 'phone', 'email', 'city', 'gender', 'qualification', 'employment_status', 'notes'];
+        $columns = ['program_id', 'name', 'phone', 'national_id', 'email', 'city', 'gender', 'qualification', 'employment_status', 'notes'];
+        $data['name'] = trim((string) ($data['name'] ?? ''));
         Registration::create(array_intersect_key($data, array_flip($columns)) + [
             'extra' => $extra ?: null,
             'status' => 'new',

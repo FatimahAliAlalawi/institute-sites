@@ -36,6 +36,7 @@ class Program extends Model
         'register' => ['تسجيل المتدرب', 'استمارة إلكترونية أو حضور مباشر', 'trainee', null],
         'invoice' => ['إنشاء الفاتورة', 'مباشرة بعد التسجيل', 'trainee', null],
         'invoice_sent' => ['إرسال الفاتورة + رابط المجموعة', 'في رسالة واحدة للمتدرب', 'trainee', null],
+        'profile' => ['إكمال بيانات المتدرب', 'رابط يكمل فيه الاسم الرباعي والهوية والميلاد (يُرسل تلقائيًا بالإيميل بعد الدفع)', 'trainee', null],
         'welcome' => ['رسالة ترحيبية', 'ترحيب بالمتدرب هاتفيًا', 'trainee', null],
         'prep_sheet' => ['إنشاء جدول التحضير', 'ومشاركته مع المدربين', 'course', -3],
         'room' => ['تجهيز القاعة والملازم', 'تجهيز المكان والمواد', 'course', -3],
@@ -45,7 +46,7 @@ class Program extends Model
     ];
 
     /** خطوات المتدرب التي تُؤشَّر يدويًا (التسجيل نفسه = حالة «مقبول») */
-    public const TRAINEE_STEPS = ['invoice', 'invoice_sent', 'welcome', 'reminder_1d', 'reminder_am', 'tvtc'];
+    public const TRAINEE_STEPS = ['invoice', 'invoice_sent', 'profile', 'welcome', 'reminder_1d', 'reminder_am', 'tvtc'];
 
     /** رسائل بعد بدء الدورة تُتابع في نفس الجدول */
     public const AFTER_STEPS = ['pre_test' => 'الاختبار القبلي', 'attendance' => 'تقرير الحضور', 'post_test' => 'الاختبار البعدي', 'thanks' => 'الشكر بعد الدورة'];

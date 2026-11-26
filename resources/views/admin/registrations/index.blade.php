@@ -76,7 +76,7 @@
                     @foreach ($registrations as $r)
                         <tr>
                             <td class="sub">{{ $r->id }}</td>
-                            <td><a href="{{ route('admin.registrations.show', $r) }}"><b>{{ $r->name }}</b></a><div class="sub">{{ $r->city }}</div></td>
+                            <td><a href="{{ route('admin.registrations.show', $r) }}"><b>{{ $r->name ?: 'بدون اسم' }}</b></a><div class="sub">{{ $r->city }}</div></td>
                             <td dir="ltr" style="text-align:right"><a href="tel:{{ $r->phone }}">{{ $r->phone }}</a></td>
                             <td>{{ $r->program?->title ?? 'تسجيل عام' }}</td>
                             <td>

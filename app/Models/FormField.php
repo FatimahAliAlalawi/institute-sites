@@ -30,7 +30,7 @@ class FormField extends Model
 
     /** حقول أساسية لا يمكن إخفاؤها ولا جعلها اختيارية (يعتمد عليها النظام) */
     public const LOCKED = [
-        'registration' => ['name', 'phone'],
+        'registration' => ['phone', 'national_id'],
         'signup' => ['name', 'email', 'password'],
         'contact' => ['name', 'body'],
     ];
