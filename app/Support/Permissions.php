@@ -81,6 +81,10 @@ class Permissions
     /** الصلاحية المطلوبة لمسار معيّن، أو null إن كان متاحًا لكل المستخدمين (الرئيسية، حسابي، الخروج) */
     public static function requiredFor(?string $routeName): ?string
     {
+        // «تشغيل الدورة»: يفتحه كل موظف له مهمة في الدورة، والصفحة نفسها تحدد ما يقدر يعدّله
+        if ($routeName && str_starts_with($routeName, 'admin.programs.ops')) {
+            return null;
+        }
         foreach (self::ROUTES as $permission => $prefixes) {
             foreach ($prefixes as $prefix) {
                 if ($routeName && str_starts_with($routeName, $prefix)) {

@@ -15,11 +15,27 @@ use Illuminate\Validation\Rule;
 /** تشغيل الدورة: خطوات «آلية التسجيل» بالمسؤولين والمواعيد، وما نُفّذ لكل متدرب */
 class OpsController extends Controller
 {
-    public function show(Program $program)
+    public function show(Request $request, Program $program)
     {
+        [, $full, $mine] = $this->access($request, $program);
         $trainees = $program->registrations()->whereIn('status', Registration::SEAT_STATUSES)->orderBy('name')->get();
 
-        return view('admin.programs.ops', compact('program', 'trainees'));
+        return view('admin.programs.ops', compact('program', 'trainees', 'full', 'mine'));
+    }
+
+    /**
+     * من يفتح الصفحة: صاحب صلاحية البرامج يعدّل كل شيء، والموظف المسند له خطوة يعدّل خطواته فقط.
+     *
+     * @return array{0: ?Admin, 1: bool, 2: array<int,string>}
+     */
+    protected function access(Request $request, Program $program): array
+    {
+        $admin = Admin::with('role')->find($request->session()->get('admin_id'));
+        $full = (bool) $admin?->allows('programs');
+        $mine = $admin ? array_values(array_filter(array_keys(Program::OPS_STEPS), fn ($s) => $s !== 'register' && \App\Support\TaskBoard::matches($admin, $program->opsAssignees($s)))) : [];
+        abort_unless($full || $mine, 403, 'ما لك مهام في هذه الدورة.');
+
+        return [$admin, $full, $mine];
     }
 
     public function update(Request $request, Program $program)
@@ -32,26 +48,26 @@ class OpsController extends Controller
             'group_link' => 'nullable|url|max:255',
         ]);
 
-        $admin = Admin::find($request->session()->get('admin_id'));
+        [$admin, $full, $mine] = $this->access($request, $program);
         $by = $admin?->name ?: $admin?->username;
         $stamp = ['at' => now()->format('Y-m-d H:i'), 'by' => $by];
 
         $ops = $program->ops ?? [];
 
-        // المسؤولون
-        $assignees = [];
-        foreach (array_keys(Program::OPS_STEPS) as $step) {
+        // المسؤولون (للإدارة فقط)
+        $assignees = $ops['assignees'] ?? [];
+        foreach ($full ? array_keys(Program::OPS_STEPS) : [] as $step) {
             $assignees[$step] = trim((string) $request->input("assignees.$step", ''));
         }
         $ops['assignees'] = $assignees;
-        if ($request->boolean('save_default')) {
+        if ($full && $request->boolean('save_default')) {
             Setting::put(['ops_assignees' => json_encode($assignees, JSON_UNESCAPED_UNICODE)]);
         }
 
         // خطوات الدورة (مرة واحدة)
         $done = $ops['done'] ?? [];
         foreach (Program::OPS_STEPS as $step => [, , $kind]) {
-            if ($kind !== 'course') {
+            if ($kind !== 'course' || (! $full && ! in_array($step, $mine, true))) {
                 continue;
             }
             if ($request->boolean("done.$step")) {
@@ -62,7 +78,7 @@ class OpsController extends Controller
         }
         $ops['done'] = $done;
 
-        $program->forceFill(['ops' => $ops, 'group_link' => $request->input('group_link') ?: null])->save();
+        $program->forceFill(['ops' => $ops, 'group_link' => $full ? ($request->input('group_link') ?: null) : $program->group_link])->save();
 
         // خطوات كل متدرب
         $checked = (array) $request->input('steps', []);
@@ -70,6 +86,9 @@ class OpsController extends Controller
         foreach ($trainees as $t) {
             $steps = $t->steps ?? [];
             foreach (array_merge(Program::TRAINEE_STEPS, array_keys(Program::AFTER_STEPS)) as $step) {
+                if (! $full && ! in_array($step, $mine, true)) {
+                    continue;
+                }
                 if (! empty($checked[$t->id][$step])) {
                     $steps[$step] ??= $stamp;
                 } else {
@@ -85,7 +104,9 @@ class OpsController extends Controller
     /** إرسال رسالة بالإيميل لكل متدرب لم تُنفّذ له الخطوة بعد */
     public function email(Request $request, Program $program)
     {
+        [, $full, $mine] = $this->access($request, $program);
         $type = $request->validate(['type' => ['required', Rule::in(array_keys(TraineeMessages::TYPES))]])['type'];
+        abort_unless($full || in_array($type, $mine, true), 403);
 
         if (! TraineeMessages::available($type, $program)) {
             return back()->withErrors(['type' => 'الاختبار مغلق. افتحه أولًا من «الاختبار القبلي والبعدي» ثم أرسل الرابط.']);
@@ -135,8 +156,9 @@ class OpsController extends Controller
             'registration_id' => 'required|integer',
             'type' => ['required', Rule::in(array_keys(TraineeMessages::TYPES))],
         ]);
+        [$admin, $full, $mine] = $this->access($request, $program);
+        abort_unless($full || in_array($data['type'], $mine, true), 403);
         $t = $program->seatRegistrations()->findOrFail($data['registration_id']);
-        $admin = Admin::find($request->session()->get('admin_id'));
         $steps = $t->steps ?? [];
         $steps[$data['type']] = ['at' => now()->format('Y-m-d H:i'), 'by' => ($admin?->name ?: 'موظف').' (واتساب)'];
         $t->forceFill(['steps' => $steps])->save();

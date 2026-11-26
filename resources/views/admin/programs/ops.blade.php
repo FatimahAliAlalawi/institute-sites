@@ -3,10 +3,12 @@
 @section('title', 'تشغيل الدورة: '.$program->title)
 
 @section('actions')
-    <a href="{{ route('admin.course-attendance.show', $program) }}" class="btn"><i class="fa-solid fa-clipboard-check"></i> التحضير</a>
-    @if ($currentAdmin->allows('course_attendance'))<a href="{{ route('admin.course-attendance.tests', $program) }}" class="btn"><i class="fa-solid fa-file-pen"></i> الاختبار القبلي والبعدي</a>@endif
-    <a href="{{ route('admin.registrations.index', ['program' => $program->id]) }}" class="btn"><i class="fa-solid fa-user-plus"></i> طلبات الدورة</a>
-    <a href="{{ route('admin.programs.edit', $program) }}" class="btn"><i class="fa-regular fa-pen-to-square"></i> بيانات الدورة</a>
+    @if ($currentAdmin->allows('course_attendance'))
+        <a href="{{ route('admin.course-attendance.show', $program) }}" class="btn"><i class="fa-solid fa-clipboard-check"></i> التحضير</a>
+        <a href="{{ route('admin.course-attendance.tests', $program) }}" class="btn"><i class="fa-solid fa-file-pen"></i> الاختبار القبلي والبعدي</a>
+    @endif
+    @if ($currentAdmin->allows('registrations'))<a href="{{ route('admin.registrations.index', ['program' => $program->id]) }}" class="btn"><i class="fa-solid fa-user-plus"></i> طلبات الدورة</a>@endif
+    @if ($full)<a href="{{ route('admin.programs.edit', $program) }}" class="btn"><i class="fa-regular fa-pen-to-square"></i> بيانات الدورة</a>@endif
 @endsection
 
 @php
@@ -15,6 +17,7 @@
     $total = $trainees->count();
     $staff = \App\Models\Admin::where('is_active', true)->get();
     $today = now()->startOfDay();
+    $can = fn ($step) => $full || in_array($step, $mine, true);
     $phase = fn ($offset) => match (true) {
         $offset === null => 'عند كل تسجيل',
         $offset === 0 => 'يوم الدورة',
@@ -35,6 +38,9 @@
 
     <form method="post" action="{{ route('admin.programs.ops.update', $program) }}">
         @csrf
+        @unless ($full)
+            <div class="alert alert-success">تقدر تؤشّر خطواتك وترسل رسائلها. توزيع المسؤولين وبيانات الدورة للإدارة.</div>
+        @endunless
 
         <div class="card">
             <h2>آلية التسجيل — من لحظة التسجيل حتى يوم الدورة</h2>
@@ -54,19 +60,23 @@
                             </td></tr>
                             @php($lastPhase = $phase($offset))
                         @endif
-                        <tr @if ($late) style="background:#fdecec" @endif>
+                        <tr @if ($late) style="background:#fdecec" @elseif (! $full && $can($key)) style="background:#f2fbf5" @endif>
                             <td><b>{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</b></td>
                             <td><b>{{ $title }}</b><div class="sub">{{ $detail }}</div></td>
                             <td class="sub" style="white-space:nowrap">{{ $due ? $due->format('Y-m-d') : 'مع كل متدرب' }}@if ($late)<div style="color:#b42318;font-weight:700">متأخرة</div>@endif</td>
                             <td>
-                                <input type="text" name="assignees[{{ $key }}]" value="{{ old("assignees.$key", $program->opsAssignees($key)) }}" placeholder="اسم المسؤول" style="min-width:170px">
+                                @if ($full)
+                                    <input type="text" name="assignees[{{ $key }}]" value="{{ old("assignees.$key", $program->opsAssignees($key)) }}" placeholder="اسم المسؤول" style="min-width:170px">
+                                @else
+                                    <b>{{ $program->opsAssignees($key) ?: '—' }}</b>
+                                @endif
                                 @php($linked = $staff->filter(fn ($a) => \App\Support\TaskBoard::matches($a, $program->opsAssignees($key))))
                                 <div class="sub">@if ($linked->isNotEmpty())<i class="fa-solid fa-link"></i> {{ $linked->pluck('name')->join('، ') }}@elseif ($program->opsAssignees($key))<span style="color:#b54708">غير مربوط بحساب</span>@endif</div>
                             </td>
                             <td style="white-space:nowrap">
                                 @if ($kind === 'course')
                                     @php($d = $program->opsCourseDone($key))
-                                    <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" name="done[{{ $key }}]" value="1" @checked($d)> تم</label>
+                                    <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" name="done[{{ $key }}]" value="1" @checked($d) @disabled(! $can($key))> تم</label>
                                     @if ($d)<div class="sub">{{ $d['by'] ?? '' }} — {{ $d['at'] ?? '' }}</div>@endif
                                 @elseif ($total === 0)
                                     <span class="sub">لا متدربين بعد</span>
@@ -78,6 +88,7 @@
                     @endforeach
                 </table>
             </div>
+            @if ($full)
             <div class="form-grid" style="margin-top:14px">
                 <div class="field">
                     <label for="group_link">رابط مجموعة الدورة (واتساب)</label>
@@ -89,6 +100,7 @@
                     <div class="hint">اكتب الأسماء كما في حسابات الموظفين حتى تظهر المهمة في «مهامي» عند كل موظف. «غير مربوط بحساب» يعني ما فيه حساب بهذا الاسم.</div>
                 </div>
             </div>
+            @endif
         </div>
 
         <div class="card">
@@ -117,7 +129,7 @@
                         @foreach ($trainees as $t)
                             <tr>
                                 <td>
-                                    <a href="{{ route('admin.registrations.show', $t) }}"><b>{{ $t->name }}</b></a>
+                                    @if ($currentAdmin->allows('registrations'))<a href="{{ route('admin.registrations.show', $t) }}"><b>{{ $t->name }}</b></a>@else<b>{{ $t->name }}</b>@endif
                                     <div class="sub" dir="ltr" style="text-align:right">{{ $t->phone }} @if ($t->invoice_no)· {{ $t->invoice_no }}@endif</div>
                                     @unless ($t->email)<div class="sub" style="color:#b54708">بدون بريد</div>@endunless
                                     @unless ($t->profile_done_at)<div class="sub" style="color:#b54708">البيانات ناقصة</div>@endunless
@@ -126,8 +138,8 @@
                                 </td>
                                 @foreach ($cols as $s => $label)
                                     <td style="text-align:center;white-space:nowrap">
-                                        <input type="checkbox" id="cb-{{ $t->id }}-{{ $s }}" name="steps[{{ $t->id }}][{{ $s }}]" value="1" @checked($t->stepDone($s)) title="{{ $t->steps[$s]['by'] ?? '' }} {{ $t->steps[$s]['at'] ?? '' }}">
-                                        @if (isset($msgTypes[$s]) && \App\Support\TraineeMessages::available($s, $program))
+                                        <input type="checkbox" id="cb-{{ $t->id }}-{{ $s }}" name="steps[{{ $t->id }}][{{ $s }}]" value="1" @checked($t->stepDone($s)) @disabled(! $can($s)) title="{{ $t->steps[$s]['by'] ?? '' }} {{ $t->steps[$s]['at'] ?? '' }}">
+                                        @if (isset($msgTypes[$s]) && $can($s) && \App\Support\TraineeMessages::available($s, $program))
                                             <a href="{{ \App\Support\TraineeMessages::whatsappUrl($t, \App\Support\TraineeMessages::render($s, $t, $program)) }}" target="_blank" rel="noopener" class="wa-send" data-reg="{{ $t->id }}" data-type="{{ $s }}" title="إرسال «{{ $msgTypes[$s][0] }}» واتساب" style="color:#128C7E;margin-inline-start:4px"><i class="fa-brands fa-whatsapp"></i></a>
                                         @endif
                                     </td>
@@ -151,7 +163,7 @@
             <p class="sub" style="margin-top:0">يرسل الرسالة لكل متدرب عنده بريد ولم تُنفّذ له الخطوة بعد، ويؤشّرها تلقائيًا. «تقرير الحضور» يُرسل للجميع في كل مرة.</p>
             <div style="display:flex;gap:8px;flex-wrap:wrap">
                 @foreach (\App\Support\TraineeMessages::TYPES as $type => [$label])
-                    @continue(! \App\Support\TraineeMessages::available($type, $program))
+                    @continue(! \App\Support\TraineeMessages::available($type, $program) || ! $can($type))
                     <form method="post" action="{{ route('admin.programs.ops.email', $program) }}" onsubmit="return confirm('إرسال «{{ $label }}» بالإيميل؟')">
                         @csrf
                         <input type="hidden" name="type" value="{{ $type }}">
